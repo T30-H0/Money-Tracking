@@ -1,12 +1,16 @@
 import "./globals.css";
 
 import type { ReactNode } from "react";
+import { Sidebar } from "@/components/Sidebar/Sidebar";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-red-gray">
-        <main className="mx-auto p-4">{children}</main>
+      <body className="bg-gray-50 text-gray-900">
+        <div className="flex">
+          <Sidebar />
+          <main className="min-h-screen flex-1 p-6">{children}</main>
+        </div>
       </body>
     </html>
   );

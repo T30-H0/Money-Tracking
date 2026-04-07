@@ -1,25 +1,11 @@
 "use client";
 
+import { navItems } from "@/constants/sidebar.constant";
+import { isActiveHref } from "@/utils/sidebar";
+import CurrencyDollarIcon from "@heroicons/react/24/solid/esm/CurrencyDollarIcon";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-
-type NavItem = {
-  label: string;
-  href: string;
-};
-
-const navItems: NavItem[] = [
-  { label: "Home", href: "/home" },
-  { label: "Posts", href: "/posts" },
-  { label: "Profile", href: "/profile" },
-  { label: "Settings", href: "/settings" },
-];
-
-const isActiveHref = (pathname: string, href: string): boolean => {
-  if (href === "/") return pathname === "/";
-  return pathname === href || pathname.startsWith(`${href}/`);
-};
 
 export const Sidebar = () => {
   const pathname = usePathname();
@@ -39,7 +25,7 @@ export const Sidebar = () => {
           }`}
         >
           <div className="grid size-9 place-items-center rounded-lg bg-gray-900 text-sm font-semibold text-white flex-shrink-0">
-            MT
+            <CurrencyDollarIcon />
           </div>
           {!isCollapsed && (
             <div className="text-sm font-semibold text-gray-900 whitespace-nowrap">
@@ -66,7 +52,7 @@ export const Sidebar = () => {
               title={isCollapsed ? item.label : ""}
             >
               <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
-                {item.label[0]}
+                {item.icon}
               </span>
               {!isCollapsed && <span>{item.label}</span>}
             </Link>

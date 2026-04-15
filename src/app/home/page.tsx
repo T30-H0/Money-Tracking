@@ -1,6 +1,8 @@
 import HomeCarousel from "@/app/home/_components/HomeCarousel";
 import { PropertyCard } from "@/components/PropertyCard/PropertyCard";
+import { Button } from "@/components/ui/button";
 import { mockProperties, mockRecentViews } from "@/themes/home-data";
+import { ArrowUpIcon } from "lucide-react";
 
 export default function HomePage() {
   return (

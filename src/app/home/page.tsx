@@ -1,9 +1,14 @@
+import HomeCarousel from "@/app/home/_components/HomeCarousel";
 import { PropertyCard } from "@/components/PropertyCard/PropertyCard";
 import { mockProperties, mockRecentViews } from "@/themes/home-data";
 
 export default function HomePage() {
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-12 px-4 py-8 sm:px-6 lg:px-8">
+      <section>
+        <HomeCarousel />
+      </section>
+
       <section>
         <h2 className="mb-6 text-2xl font-bold tracking-tight text-gray-900">
           Discover top stays

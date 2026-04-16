@@ -1,4 +1,5 @@
 export interface PropertyCardProps {
+  id: string;
   imageUrl: string;
   isFavorite?: boolean;
   title: string;

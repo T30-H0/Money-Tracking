@@ -1,8 +1,6 @@
 import HomeCarousel from "@/app/home/_components/HomeCarousel";
 import { PropertyCard } from "@/components/PropertyCard/PropertyCard";
-import { Button } from "@/components/ui/button";
 import { mockProperties, mockRecentViews } from "@/themes/home-data";
-import { ArrowUpIcon } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -20,6 +18,7 @@ export default function HomePage() {
           {mockProperties.map((property) => (
             <PropertyCard
               key={property.id}
+              id={property.id}
               imageUrl={property.imageUrl}
               isFavorite={property.isFavorite}
               title={property.title}
@@ -41,6 +40,7 @@ export default function HomePage() {
           {mockRecentViews.map((property) => (
             <PropertyCard
               key={property.id}
+              id={property.id}
               imageUrl={property.imageUrl}
               isFavorite={property.isFavorite}
               title={property.title}

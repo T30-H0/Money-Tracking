@@ -6,8 +6,10 @@ import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import { StarIcon } from "@heroicons/react/24/solid";
 import type { PropertyCardProps } from "@/types/property-card";
+import Link from "next/link";
 
 export function PropertyCard({
+  id,
   imageUrl,
   isFavorite: initialIsFavorite = false,
   title,
@@ -28,7 +30,10 @@ export function PropertyCard({
   };
 
   return (
-    <div className="group flex w-full cursor-pointer flex-col gap-2">
+    <Link
+      href={`/home/${id}`}
+      className="group flex w-full cursor-pointer flex-col gap-2"
+    >
       {/* Image */}
       <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-200">
         <Image
@@ -79,6 +84,6 @@ export function PropertyCard({
           <span className="text-sm text-gray-500">night</span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -26,7 +26,7 @@ export const mockDetails: PropertyDetail = {
   ],
   title: "Cozy Mountain Retreat",
   description:
-    "Escape to this charming mountain retreat with stunning views and cozy amenities. Perfect for a romantic getaway or a peaceful solo retreat. Enjoy hiking trails, a private hot tub, and a fireplace to keep you warm on chilly nights. Book your stay now and experience the ultimate mountain escape!",
+    "Escape to this charming mountain retreat with stunning views and cozy amenities. Perfect for a romantic getaway or a peaceful solo retreat. Enjoy hiking trails, a private hot tub, and a fireplace to keep you warm on chilly nights. Book your stay now and experience the ultimate mountain escape! This cozy mountain retreat offers breathtaking views and a range of amenities to make your stay unforgettable. Whether you're looking for a romantic getaway or a peaceful solo retreat, this property has everything you need. Enjoy hiking trails that wind through the surrounding mountains, a private hot tub for relaxing after a day of adventure, and a fireplace to keep you warm on chilly nights. Don't miss out on the opportunity to experience the ultimate mountain escape – book your stay now!",
   rating: 4.85,
   totalReviews: 128,
   address: "Aspen, Colorado",

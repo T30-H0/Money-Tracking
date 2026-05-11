@@ -1,3 +1,6 @@
+"use client";
+
+import { ReadMoreText } from "@/components/ui/readMoreText";
 import { MapPin } from "lucide-react";
 
 interface DescriptionDetailsProps {
@@ -15,7 +18,8 @@ export function DescriptionDetails({
         <MapPin className="h-4 w-4 shrink-0" />
         <span className="text-sm font-medium">{address}</span>
       </div>
-      <p className="leading-relaxed text-gray-700">{description}</p>
+
+      <ReadMoreText text={description} />
     </div>
   );
 }

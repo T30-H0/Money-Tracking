@@ -81,7 +81,7 @@ export function PropertyCard({
 
         <div className="mt-1 flex items-baseline gap-1">
           <span className="font-semibold text-gray-900">${price}</span>
-          <span className="text-sm text-gray-500">night</span>
+          <span className="text-sm text-gray-500">/night</span>
         </div>
       </div>
     </Link>

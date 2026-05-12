@@ -4,13 +4,15 @@ import { ReviewsSlider } from "./_components/ReviewsSlider";
 import { DescriptionDetails } from "./_components/DescriptionsDetails";
 import { AmenitiesList } from "./_components/AmenitiesList";
 import { RatingSummary } from "./_components/RatingSummary";
+import { BookingSection } from "./_components/BookingSection";
+import { Separator } from "@/components/ui/separator";
 
 export default async function DetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  await params;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -20,21 +22,11 @@ export default async function DetailPage({
         </div>
 
         <div className="lg:col-span-5 flex flex-col gap-10">
-          <ReviewsSlider reviews={mockDetails.reviews} />
-          <RatingSummary
-            rating={mockDetails.rating}
-            totalReviews={mockDetails.totalReviews}
-            reviews={mockDetails.reviews}
-          />
+          <BookingSection price={mockDetails.price} />
         </div>
       </div>
 
-      <div className="mt-8 rounded-2xl border border-gray-100 p-6">
-        <DescriptionDetails
-          address={mockDetails.address}
-          description={mockDetails.description}
-        />
-      </div>
+      <Separator orientation="vertical" />
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-gray-100 p-6">
@@ -51,6 +43,13 @@ export default async function DetailPage({
             />
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 rounded-2xl border border-gray-100 p-6">
+        <DescriptionDetails
+          address={mockDetails.address}
+          description={mockDetails.description}
+        />
       </div>
     </div>
   );

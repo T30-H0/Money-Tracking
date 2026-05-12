@@ -14,13 +14,18 @@ export default async function DetailPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-center">
         <div className="lg:col-span-7">
           <ImageGallery images={mockDetails.images} title={mockDetails.title} />
         </div>
 
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 flex flex-col gap-10">
           <ReviewsSlider reviews={mockDetails.reviews} />
+          <RatingSummary
+            rating={mockDetails.rating}
+            totalReviews={mockDetails.totalReviews}
+            reviews={mockDetails.reviews}
+          />
         </div>
       </div>
 
@@ -37,11 +42,14 @@ export default async function DetailPage({
         </div>
 
         <div className="flex flex-col gap-4">
-          <RatingSummary
-            rating={mockDetails.rating}
-            totalReviews={mockDetails.totalReviews}
-            reviews={mockDetails.reviews}
-          />
+          <div className="lg:col-span-5 flex flex-col gap-4">
+            <ReviewsSlider reviews={mockDetails.reviews} />
+            <RatingSummary
+              rating={mockDetails.rating}
+              totalReviews={mockDetails.totalReviews}
+              reviews={mockDetails.reviews}
+            />
+          </div>
         </div>
       </div>
     </div>

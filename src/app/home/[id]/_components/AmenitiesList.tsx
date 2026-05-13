@@ -12,7 +12,6 @@ const MAX_VISIBLE = 14;
 export function AmenitiesList({ items }: AmenitiesListProps) {
   const [expanded, setExpanded] = useState(false);
   const visibleItems = expanded ? items : items.slice(0, MAX_VISIBLE);
-  const hiddenCount = items.length - MAX_VISIBLE;
 
   return (
     <div className="flex flex-col gap-4">

@@ -26,7 +26,7 @@ export default async function DetailPage({
         </div>
       </div>
 
-      <Separator orientation="vertical" />
+      <Separator className="my-8 h-[0.5px] bg-gray-100" />
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-gray-100 p-6">

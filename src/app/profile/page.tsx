@@ -1,4 +1,6 @@
-export default function ProfilePage() {
-  return <h1 className="text-2xl font-semibold">Profile</h1>;
-}
+import { ProfileScreen } from "@/app/profile/_components/ProfileScreen";
+import { mockUserProfile } from "@/themes/profile-data";
 
+export default function ProfilePage() {
+  return <ProfileScreen profile={mockUserProfile} />;
+}

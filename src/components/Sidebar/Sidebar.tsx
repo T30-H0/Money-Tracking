@@ -20,8 +20,10 @@ export const Sidebar = () => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_, session) => setUser(session?.user ?? null)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) =>
+      setUser(session?.user ?? null),
     );
 
     return () => subscription.unsubscribe();
@@ -104,7 +106,9 @@ export const Sidebar = () => {
             )}
             <div
               className={`flex flex-1 flex-col min-w-0 transition-opacity ${
-                isCollapsed ? "opacity-0 duration-200" : "opacity-100 duration-300"
+                isCollapsed
+                  ? "opacity-0 duration-200"
+                  : "opacity-100 duration-300"
               }`}
             >
               <span className="text-sm font-medium text-gray-900 truncate">
@@ -132,7 +136,9 @@ export const Sidebar = () => {
               </span>
               <span
                 className={`whitespace-nowrap transition-opacity ${
-                  isCollapsed ? "opacity-0 duration-200" : "opacity-100 duration-300"
+                  isCollapsed
+                    ? "opacity-0 duration-200"
+                    : "opacity-100 duration-300"
                 }`}
               >
                 Sign in with Google

@@ -1,5 +1,18 @@
 # AGENTS.md
 
+## Tech Stack (Non-Negotiable)
+
+- **UI Components**: [shadcn/ui, Radix UI] — always use these, never raw HTML/JS equivalents
+- **Styling**: [Tailwind CSS only — no inline styles, no CSS modules, no styled-components]
+  <!-- - **State**: [Zustand / React Query — not useState for server data] -->
+  <!-- - **Forms**: [React Hook Form + Zod — never manual onChange chains] -->
+
+## Hard Rules
+
+- NEVER implement a UI pattern in vanilla JS/HTML if a component from the tech stack above covers it.
+- Before writing any new component, search the codebase for an existing one that does the same job.
+- If a library above isn't imported yet in the file, add the import — don't work around it.
+
 ## Coding Rules
 
 - Inspect existing files before implementing.

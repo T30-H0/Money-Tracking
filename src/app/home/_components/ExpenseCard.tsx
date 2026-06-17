@@ -9,12 +9,14 @@ import type { ExpenseSummary } from "@/types/finance";
 interface ExpenseCardProps {
   summary: ExpenseSummary;
   format: (amount: number) => string;
+  href?: string;
   onViewDetails?: () => void;
 }
 
 export function ExpenseCard({
   summary,
   format,
+  href,
   onViewDetails,
 }: ExpenseCardProps) {
   return (
@@ -22,6 +24,7 @@ export function ExpenseCard({
       icon={<ShoppingCart className="size-5" />}
       title={EXPENSE_CARD_COPY.title}
       actionLabel={EXPENSE_CARD_COPY.action}
+      href={href}
       onAction={onViewDetails}
       withChevron
     >

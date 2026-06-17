@@ -37,8 +37,16 @@ export function HomeScreen({ overview }: HomeScreenProps) {
       </header>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <ExpenseCard summary={overview.expense} format={format} />
-        <InvestmentCard summary={overview.investment} format={format} />
+        <ExpenseCard
+          summary={overview.expense}
+          format={format}
+          href="/home/expense"
+        />
+        <InvestmentCard
+          summary={overview.investment}
+          format={format}
+          href="/home/investment"
+        />
       </div>
     </div>
   );

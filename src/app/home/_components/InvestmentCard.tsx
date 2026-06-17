@@ -9,12 +9,14 @@ import type { InvestmentSummary } from "@/types/finance";
 interface InvestmentCardProps {
   summary: InvestmentSummary;
   format: (amount: number) => string;
+  href?: string;
   onViewDetails?: () => void;
 }
 
 export function InvestmentCard({
   summary,
   format,
+  href,
   onViewDetails,
 }: InvestmentCardProps) {
   const isPositive = summary.direction === "up";
@@ -28,6 +30,7 @@ export function InvestmentCard({
       title={INVESTMENT_CARD_COPY.title}
       actionLabel={INVESTMENT_CARD_COPY.action}
       withChevron
+      href={href}
       onAction={onViewDetails}
     >
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">

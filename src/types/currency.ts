@@ -1,11 +1,8 @@
 export type CurrencyCode =
   | "USD"
   | "EUR"
-  | "GBP"
   | "JPY"
-  | "CAD"
   | "AUD"
-  | "INR"
   | "SGD"
   | "VND";
 

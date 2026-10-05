@@ -1,22 +1,22 @@
 import "./globals.css";
 
-import type { ReactNode } from "react";
-import { Sidebar } from "@/components/Sidebar/Sidebar";
+import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import type { ReactNode } from "react";
+
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
+export const metadata: Metadata = {
+  title: { default: "Money Tracking", template: "%s · Money Tracking" },
+  description: "A focused dashboard for tracking income and expenses.",
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className="bg-gray-50 text-gray-900">
-        <div className="flex">
-          <Sidebar />
-          <main className="min-h-screen flex-1 pl-48 p-24">{children}</main>
-        </div>
-      </body>
+      <body className="min-h-screen bg-background text-foreground antialiased">{children}</body>
     </html>
   );
 }

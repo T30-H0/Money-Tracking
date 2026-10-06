@@ -33,6 +33,9 @@ import { cn } from "@/lib/utils";
 import type { TransactionInput } from "@/schemas/transaction";
 import type { Transaction } from "@/types/finance";
 import { toDisplayAmountInput } from "@/utils/currency";
+import { useLanguage } from "@/context/language-context";
+import { getCategoryName } from "@/i18n/categories";
+import type { MessageKey } from "@/i18n/messages";
 
 export function TransactionDetailScreen({
   initialTransaction,
@@ -47,11 +50,12 @@ export function TransactionDetailScreen({
     updateTransaction,
     deleteTransaction,
   } = useFinance();
+  const { intlLocale, t } = useLanguage();
   const [transaction, setTransaction] = useState(initialTransaction);
   const [editing, setEditing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState("");
+  const [deleteError, setDeleteError] = useState<MessageKey | null>(null);
   const category = categories.find(
     (item) => item.id === transaction.categoryId,
   );
@@ -71,6 +75,7 @@ export function TransactionDetailScreen({
   if (!category) return null;
   const Icon = CATEGORY_ICONS[category.icon];
   const isIncome = transaction.type === "income";
+  const categoryName = getCategoryName(category, t);
 
   const handleDelete = async (
     event: MouseEvent<HTMLButtonElement>,
@@ -78,10 +83,10 @@ export function TransactionDetailScreen({
     event.preventDefault();
     if (deleting) return;
     setDeleting(true);
-    setDeleteError("");
+    setDeleteError(null);
     const result = await deleteTransaction(transaction.id);
     if (!result.ok) {
-      setDeleteError(result.message ?? "Could not delete the transaction.");
+      setDeleteError(result.message ?? "error.deleteTransaction");
       setDeleting(false);
       setDeleteOpen(false);
       return;
@@ -95,44 +100,43 @@ export function TransactionDetailScreen({
       <Button asChild variant="ghost" className="-ml-2">
         <Link href="/transactions">
           <ArrowLeft className="size-4" />
-          Back to transactions
+          {t("transaction.back")}
         </Link>
       </Button>
 
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-primary">Transaction details</p>
+          <p className="text-sm font-medium text-primary">{t("transaction.details")}</p>
           <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-            {transaction.note || category.name}
+            {transaction.note || categoryName}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Review or update this transaction.
+            {t("transaction.detailsDescription")}
           </p>
         </div>
         {!editing ? (
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setEditing(true)}>
               <Pencil className="size-4" />
-              Edit
+              {t("transaction.edit")}
             </Button>
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive">
                   <Trash2 className="size-4" />
-                  Delete
+                  {t("transaction.delete")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete this transaction?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("transaction.deleteTitle")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This permanently removes the transaction from your account.
-                    This action cannot be undone.
+                    {t("transaction.deleteDescription")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel disabled={deleting}>
-                    Cancel
+                    {t("transaction.cancel")}
                   </AlertDialogCancel>
                   <AlertDialogAction onClick={handleDelete} disabled={deleting}>
                     {deleting ? (
@@ -140,7 +144,7 @@ export function TransactionDetailScreen({
                     ) : (
                       <Trash2 className="size-4" />
                     )}
-                    {deleting ? "Deleting" : "Delete transaction"}
+                    {deleting ? t("transaction.deleting") : t("transaction.deleteAction")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -154,20 +158,20 @@ export function TransactionDetailScreen({
           role="alert"
           className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive"
         >
-          {deleteError}
+          {t(deleteError)}
         </p>
       ) : null}
 
       {editing ? (
         <Card>
           <CardHeader>
-            <CardTitle>Edit transaction</CardTitle>
+            <CardTitle>{t("transaction.editTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <TransactionForm
               key={`${transaction.id}-${currency}-${transaction.amount}-${transaction.categoryId}-${transaction.date}-${transaction.note}`}
               defaultValues={defaultValues}
-              submitLabel="Save changes"
+              submitLabel={t("transaction.saveChanges")}
               onSubmit={(values) => updateTransaction(transaction.id, values)}
               onSuccess={(updated) => {
                 setTransaction(updated);
@@ -191,7 +195,7 @@ export function TransactionDetailScreen({
                 <Icon className="size-8" />
               </span>
               <p className="mt-4 text-sm font-medium text-muted-foreground">
-                {category.name}
+                {categoryName}
               </p>
               <p
                 className={cn(
@@ -210,32 +214,32 @@ export function TransactionDetailScreen({
                     : "bg-rose-100 text-rose-700",
                 )}
               >
-                {transaction.type}
+                {t(isIncome ? "transaction.type.income" : "transaction.type.expense")}
               </span>
             </div>
             <dl className="divide-y px-5 sm:px-6">
               <DetailRow
                 icon={CalendarDays}
-                label="Transaction date"
+                label={t("transaction.transactionDate")}
                 value={fromLocalDateString(transaction.date).toLocaleDateString(
-                  undefined,
+                  intlLocale,
                   { dateStyle: "long" },
                 )}
               />
               <DetailRow
                 icon={Clock3}
-                label="Created"
+                label={t("transaction.created")}
                 value={new Date(transaction.createdAt).toLocaleString(
-                  undefined,
+                  intlLocale,
                   { dateStyle: "medium", timeStyle: "short" },
                 )}
               />
               <div className="py-5">
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Note
+                  {t("transaction.note")}
                 </dt>
                 <dd className="mt-2 whitespace-pre-wrap text-sm">
-                  {transaction.note || "No note added"}
+                  {transaction.note || t("transaction.noNote")}
                 </dd>
               </div>
             </dl>

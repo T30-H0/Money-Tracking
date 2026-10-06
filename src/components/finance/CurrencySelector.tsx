@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/select";
 import type { CurrencyCode, CurrencyMeta } from "@/types/currency";
 import { getCurrencyMeta, isSupportedCurrency } from "@/utils/currency";
+import { useLanguage } from "@/context/language-context";
 
 interface CurrencySelectorProps {
   currency: CurrencyCode;
@@ -20,8 +21,9 @@ export function CurrencySelector({
   currency,
   currencies,
   onChange,
-  label = "Select currency",
+  label,
 }: CurrencySelectorProps) {
+  const { t } = useLanguage();
   const active = getCurrencyMeta(currency);
 
   const handleChange = (value: string) => {
@@ -32,7 +34,7 @@ export function CurrencySelector({
 
   return (
     <Select value={currency} onValueChange={handleChange}>
-      <SelectTrigger aria-label={label} className="w-[7.5rem]">
+      <SelectTrigger aria-label={label ?? t("currency.select")} className="w-[7.5rem]">
         <span>{active.code}</span>
       </SelectTrigger>
 
@@ -41,7 +43,7 @@ export function CurrencySelector({
           <SelectItem key={meta.code} value={meta.code}>
             <span className="flex items-center gap-2">
               <span className="font-medium">{meta.code}</span>
-              <span className="text-muted-foreground">{meta.label}</span>
+              <span className="text-muted-foreground">{t(`currency.${meta.code}`)}</span>
             </span>
           </SelectItem>
         ))}

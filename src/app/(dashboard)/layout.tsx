@@ -9,14 +9,16 @@ import { QuickAddProvider } from "@/components/transactions/quick-add-modal";
 import { FinanceProvider } from "@/context/finance-context";
 import { getFinanceData } from "@/lib/supabase/finance";
 import { createClient } from "@/lib/supabase/server";
+import { getServerTranslator } from "@/i18n/server";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
+  const { t } = await getServerTranslator();
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) redirect("/login");
 
   const finance = await getFinanceData(supabase);
-  const name = data.user.user_metadata?.full_name ?? data.user.email ?? "there";
+  const name = data.user.user_metadata?.full_name ?? data.user.email ?? t("account.fallbackName");
   const avatarUrl = data.user.user_metadata?.avatar_url as string | undefined;
 
   return (

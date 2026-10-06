@@ -48,12 +48,13 @@ export function toBaseVnd(amount: number, from: CurrencyCode): number {
 export function formatCurrency(
   amountInVnd: number,
   code: CurrencyCode,
+  locale?: string,
   options: Intl.NumberFormatOptions = {},
 ): string {
   const meta = getCurrencyMeta(code);
   const converted = convertAmount(amountInVnd, BASE_CURRENCY, code);
 
-  return new Intl.NumberFormat(meta.locale, {
+  return new Intl.NumberFormat(locale ?? meta.locale, {
     style: "currency",
     currency: meta.code,
     maximumFractionDigits: code === "VND" || code === "JPY" ? 0 : 2,

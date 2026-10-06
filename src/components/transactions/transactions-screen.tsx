@@ -6,10 +6,12 @@ import { MonthScroller } from "@/components/transactions/month-scroller";
 import { TransactionFeed } from "@/components/transactions/transaction-feed";
 import { Card, CardContent } from "@/components/ui/card";
 import { getCurrentMonthKey, useFinance } from "@/context/finance-context";
+import { useLanguage } from "@/context/language-context";
 
 export function TransactionsScreen() {
   const { transactions, format, getTransactionsForMonth, getMonthSummary } =
     useFinance();
+  const { t } = useLanguage();
   const currentMonth = getCurrentMonthKey();
   const months = useMemo(
     () =>
@@ -31,10 +33,10 @@ export function TransactionsScreen() {
     <div className="mx-auto max-w-5xl space-y-6">
       <header>
         <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
-          Transactions
+          {t("transactions.title")}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Review income and spending month by month.
+          {t("transactions.description")}
         </p>
       </header>
 
@@ -47,17 +49,17 @@ export function TransactionsScreen() {
       <Card>
         <CardContent className="grid grid-cols-3 gap-2 p-3 pt-3 sm:gap-6 sm:p-5 sm:pt-5">
           <SummaryItem
-            label="Income"
+            label={t("transactions.income")}
             value={format(summary.income)}
             tone="income"
           />
           <SummaryItem
-            label="Expense"
+            label={t("transactions.expense")}
             value={format(summary.expense)}
             tone="expense"
           />
           <SummaryItem
-            label="Net cash flow"
+            label={t("transactions.netCashFlow")}
             value={format(summary.net)}
             tone={summary.net >= 0 ? "income" : "expense"}
           />

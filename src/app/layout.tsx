@@ -5,18 +5,27 @@ import { Geist } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
+import { LanguageProvider } from "@/context/language-context";
+import { getServerTranslator } from "@/i18n/server";
+import { APP_NAME } from "@/i18n/config";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
-export const metadata: Metadata = {
-  title: { default: "Money Tracking", template: "%s · Money Tracking" },
-  description: "A focused dashboard for tracking income and expenses.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getServerTranslator();
+  return {
+    title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
+    description: t("meta.app.description"),
+  };
+}
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const { locale } = await getServerTranslator();
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className="min-h-screen bg-background text-foreground antialiased">{children}</body>
+    <html lang={locale} className={cn("font-sans", geist.variable)}>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <LanguageProvider initialLocale={locale}>{children}</LanguageProvider>
+      </body>
     </html>
   );
 }

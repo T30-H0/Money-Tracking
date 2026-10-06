@@ -21,6 +21,7 @@ import {
 import { useFinance } from "@/context/finance-context";
 import { toLocalDateString } from "@/lib/date";
 import type { TransactionInput } from "@/schemas/transaction";
+import { useLanguage } from "@/context/language-context";
 
 interface QuickAddContextValue {
   openQuickAdd: () => void;
@@ -81,6 +82,7 @@ function QuickAddModal({
   onOpenChange: (open: boolean) => void;
 }) {
   const { currency, addTransaction } = useFinance();
+  const { t } = useLanguage();
   const defaultValues: TransactionInput = {
     type: "expense",
     displayAmount: "",
@@ -94,16 +96,16 @@ function QuickAddModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby="quick-add-description">
         <DialogHeader>
-          <DialogTitle>Add transaction</DialogTitle>
+          <DialogTitle>{t("transaction.add")}</DialogTitle>
           <DialogDescription id="quick-add-description">
-            Record income or spending in a few seconds.
+            {t("transaction.addDescription")}
           </DialogDescription>
         </DialogHeader>
         <div className="mt-5">
           <TransactionForm
             key={`${open}-${currency}`}
             defaultValues={defaultValues}
-            submitLabel="Add transaction"
+            submitLabel={t("transaction.add")}
             onSubmit={addTransaction}
             onSuccess={() => onOpenChange(false)}
             onCancel={() => onOpenChange(false)}

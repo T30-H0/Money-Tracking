@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
+import { enUS, vi } from "react-day-picker/locale";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -26,6 +27,9 @@ import {
 } from "@/schemas/transaction";
 import type { Transaction, TransactionActionResult } from "@/types/finance";
 import { formatAmountInput } from "@/utils/currency";
+import { useLanguage } from "@/context/language-context";
+import { getCategoryName } from "@/i18n/categories";
+import type { MessageKey } from "@/i18n/messages";
 
 interface TransactionFormProps {
   defaultValues: TransactionInput;
@@ -39,13 +43,14 @@ interface TransactionFormProps {
 export function TransactionForm({
   defaultValues,
   submitLabel,
-  pendingLabel = "Saving",
+  pendingLabel,
   onSubmit,
   onSuccess,
   onCancel,
 }: TransactionFormProps) {
   const { categories } = useFinance();
-  const [serverError, setServerError] = useState("");
+  const { locale, intlLocale, t } = useLanguage();
+  const [serverError, setServerError] = useState<MessageKey | null>(null);
   const {
     register,
     control,
@@ -65,7 +70,7 @@ export function TransactionForm({
   );
 
   const submit = handleSubmit(async (values) => {
-    setServerError("");
+    setServerError(null);
     const result = await onSubmit(values);
     if (!result.ok) {
       setServerError(result.message);
@@ -88,8 +93,8 @@ export function TransactionForm({
             }}
           >
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="expense">Expense</TabsTrigger>
-              <TabsTrigger value="income">Income</TabsTrigger>
+              <TabsTrigger value="expense">{t("transaction.type.expense")}</TabsTrigger>
+              <TabsTrigger value="income">{t("transaction.type.income")}</TabsTrigger>
             </TabsList>
           </Tabs>
         )}
@@ -97,7 +102,7 @@ export function TransactionForm({
 
       <div className="space-y-2">
         <Label htmlFor="transaction-amount">
-          Amount ({defaultValues.currency})
+          {t("transaction.amount", { currency: defaultValues.currency })}
         </Label>
         <Controller
           control={control}
@@ -119,13 +124,13 @@ export function TransactionForm({
         />
         {errors.displayAmount ? (
           <p className="text-xs text-destructive">
-            {errors.displayAmount.message}
+            {t(errors.displayAmount.message as MessageKey)}
           </p>
         ) : null}
       </div>
 
       <div className="space-y-2">
-        <Label>Category</Label>
+        <Label>{t("transaction.category")}</Label>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           {filteredCategories.map((category) => {
             const Icon = CATEGORY_ICONS[category.icon];
@@ -155,21 +160,21 @@ export function TransactionForm({
                 >
                   <Icon className="size-4" />
                 </span>
-                {category.name}
+                {getCategoryName(category, t)}
               </Button>
             );
           })}
         </div>
         {errors.categoryId ? (
           <p className="text-xs text-destructive">
-            {errors.categoryId.message}
+            {t(errors.categoryId.message as MessageKey)}
           </p>
         ) : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Date</Label>
+          <Label>{t("transaction.date")}</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -179,13 +184,14 @@ export function TransactionForm({
               >
                 <CalendarIcon className="size-4 text-muted-foreground" />
                 {fromLocalDateString(selectedDate).toLocaleDateString(
-                  undefined,
+                  intlLocale,
                   { dateStyle: "medium" },
                 )}
               </Button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-auto">
               <Calendar
+                locale={locale === "vi" ? vi : enUS}
                 mode="single"
                 selected={fromLocalDateString(selectedDate)}
                 onSelect={(date) =>
@@ -201,14 +207,14 @@ export function TransactionForm({
 
         <div className="space-y-2">
           <Label htmlFor="transaction-note">
-            Note{" "}
+            {t("transaction.note")}{" "}
             <span className="font-normal text-muted-foreground">
-              (optional)
+              {t("transaction.optional")}
             </span>
           </Label>
           <Textarea
             id="transaction-note"
-            placeholder="What was this for?"
+            placeholder={t("transaction.notePlaceholder")}
             maxLength={160}
             {...register("note")}
             className="h-10 min-h-10"
@@ -221,7 +227,7 @@ export function TransactionForm({
           role="alert"
           className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
-          {serverError}
+          {t(serverError)}
         </p>
       ) : null}
 
@@ -233,12 +239,12 @@ export function TransactionForm({
             onClick={onCancel}
             disabled={isSubmitting}
           >
-            Cancel
+            {t("transaction.cancel")}
           </Button>
         ) : null}
         <Button type="submit" disabled={isSubmitting} className="min-w-28">
           {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : null}
-          {isSubmitting ? pendingLabel : submitLabel}
+          {isSubmitting ? (pendingLabel ?? t("transaction.saving")) : submitLabel}
         </Button>
       </div>
     </form>

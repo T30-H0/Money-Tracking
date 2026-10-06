@@ -20,6 +20,7 @@ import {
   DEFAULT_CURRENCY,
   SUPPORTED_CURRENCIES,
 } from "@/constants/currency.constants";
+import { useLanguage } from "@/context/language-context";
 import { monthKey } from "@/lib/date";
 import type { TransactionInput } from "@/schemas/transaction";
 import type { CurrencyCode } from "@/types/currency";
@@ -29,6 +30,7 @@ import type {
   Transaction,
   TransactionActionResult,
 } from "@/types/finance";
+import type { MessageKey } from "@/i18n/messages";
 import {
   detectCurrencyFromLocale,
   formatCurrency,
@@ -48,7 +50,7 @@ interface FinanceContextValue {
   getMonthSummary: (month: string) => MonthSummary;
   addTransaction: (input: TransactionInput) => Promise<TransactionActionResult>;
   updateTransaction: (id: string, input: TransactionInput) => Promise<TransactionActionResult>;
-  deleteTransaction: (id: string) => Promise<{ ok: boolean; message?: string }>;
+  deleteTransaction: (id: string) => Promise<{ ok: boolean; message?: MessageKey }>;
 }
 
 export interface FinanceProviderProps {
@@ -71,6 +73,7 @@ export function FinanceProvider({
   categories,
   children,
 }: FinanceProviderProps) {
+  const { intlLocale } = useLanguage();
   const [transactions, setTransactions] = useState(() =>
     sortTransactions(initialTransactions),
   );
@@ -97,8 +100,8 @@ export function FinanceProvider({
 
   const format = useCallback(
     (amount: number, options?: Intl.NumberFormatOptions) =>
-      formatCurrency(amount, currency, options),
-    [currency],
+      formatCurrency(amount, currency, intlLocale, options),
+    [currency, intlLocale],
   );
 
   const getTransactionsForMonth = useCallback(
@@ -137,7 +140,7 @@ export function FinanceProvider({
     try {
       result = await createTransactionAction(input);
     } catch {
-      result = { ok: false, message: "Could not reach the server. Please try again." };
+      result = { ok: false, message: "error.serverUnavailable" };
     }
     if (!result.ok) {
       setTransactions((current) => current.filter((item) => item.id !== temporaryId));
@@ -157,7 +160,7 @@ export function FinanceProvider({
   const updateTransaction = useCallback(
     async (id: string, input: TransactionInput) => {
       const original = transactions.find((item) => item.id === id);
-      if (!original) return { ok: false as const, message: "Transaction not found." };
+      if (!original) return { ok: false as const, message: "error.transactionNotFound" as const };
 
       const optimistic: Transaction = {
         ...original,
@@ -172,7 +175,7 @@ export function FinanceProvider({
       try {
         result = await updateTransactionAction(id, input);
       } catch {
-        result = { ok: false, message: "Could not reach the server. Please try again." };
+        result = { ok: false, message: "error.serverUnavailable" };
       }
       setTransactions((current) => sortTransactions(current.map((item) => item.id === id ? (result.ok ? result.transaction : original) : item)));
       return result;
@@ -181,15 +184,15 @@ export function FinanceProvider({
   );
 
   const deleteTransaction = useCallback(
-    async (id: string) => {
+    async (id: string): Promise<{ ok: boolean; message?: MessageKey }> => {
       const original = transactions.find((item) => item.id === id);
-      if (!original) return { ok: false, message: "Transaction not found." };
+      if (!original) return { ok: false, message: "error.transactionNotFound" };
       setTransactions((current) => current.filter((item) => item.id !== id));
-      let result: { ok: true } | { ok: false; message: string };
+      let result: { ok: true } | { ok: false; message: MessageKey };
       try {
         result = await deleteTransactionAction(id);
       } catch {
-        result = { ok: false, message: "Could not reach the server. Please try again." };
+        result = { ok: false, message: "error.serverUnavailable" };
       }
       if (!result.ok) setTransactions((current) => sortTransactions([original, ...current]));
       return result;

@@ -5,9 +5,12 @@ import { ArrowDownRight, ArrowUpRight, BadgeDollarSign, Shapes, Wallet } from "l
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinance } from "@/context/finance-context";
 import { addMonths, monthKey } from "@/lib/date";
+import { useLanguage } from "@/context/language-context";
+import { getCategoryName } from "@/i18n/categories";
 
 export function KpiCards() {
   const { transactions, categories, format, getMonthSummary } = useFinance();
+  const { t } = useLanguage();
   const now = new Date();
   const currentMonth = monthKey(now);
   const previousMonth = monthKey(addMonths(now, -1));
@@ -22,9 +25,9 @@ export function KpiCards() {
 
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      <KpiCard icon={Wallet} label="Monthly spending" value={format(current.expense)} detail={difference === null ? "No previous spending" : `${Math.abs(difference).toFixed(1)}% ${difference <= 0 ? "less" : "more"} than last month`} positive={difference !== null && difference <= 0} />
-      <KpiCard icon={Shapes} label="Top category" value={topCategory?.name ?? "No spending yet"} detail={topEntry ? format(topEntry[1]) : "Add an expense to see insights"} />
-      <KpiCard icon={BadgeDollarSign} label="Net cash flow" value={format(current.net)} detail={`${format(current.income)} income`} positive={current.net >= 0} />
+      <KpiCard icon={Wallet} label={t("dashboard.monthlySpending")} value={format(current.expense)} detail={difference === null ? t("dashboard.noPreviousSpending") : t(difference <= 0 ? "dashboard.lessThanLastMonth" : "dashboard.moreThanLastMonth", { percent: Math.abs(difference).toFixed(1) })} positive={difference !== null && difference <= 0} />
+      <KpiCard icon={Shapes} label={t("dashboard.topCategory")} value={topCategory ? getCategoryName(topCategory, t) : t("dashboard.noSpending")} detail={topEntry ? format(topEntry[1]) : t("dashboard.addExpenseInsight")} />
+      <KpiCard icon={BadgeDollarSign} label={t("dashboard.netCashFlow")} value={format(current.net)} detail={t("dashboard.incomeAmount", { amount: format(current.income) })} positive={current.net >= 0} />
     </div>
   );
 }

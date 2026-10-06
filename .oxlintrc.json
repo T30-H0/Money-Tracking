@@ -1,0 +1,40 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "react", "nextjs"],
+  "categories": {
+    "correctness": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "react/jsx-key": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/components/ui/carousel.tsx"],
+      "rules": {
+        "react/set-state-in-effect": "off",
+        "react/jsx-no-constructed-context-values": "off"
+      }
+    },
+    {
+      "files": [
+        "src/components/dashboard/kpi-cards.tsx",
+        "src/components/transactions/quick-add-modal.tsx"
+      ],
+      "rules": {
+        "react/purity": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/chart.tsx"],
+      "rules": {
+        "react/jsx-no-constructed-context-values": "off"
+      }
+    }
+  ],
+  "options": {
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error"
+  }
+}

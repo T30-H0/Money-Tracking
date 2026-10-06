@@ -31,11 +31,14 @@ import { useFinance } from "@/context/finance-context";
 import { fromLocalDateString } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import type { Category, Transaction } from "@/types/finance";
+import { useLanguage } from "@/context/language-context";
+import { getCategoryName } from "@/i18n/categories";
 
 const MAX_RESULTS = 8;
 
 export function TransactionSearch() {
   const { transactions, categories, format } = useFinance();
+  const { t } = useLanguage();
   const router = useRouter();
   const desktopInputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
@@ -53,13 +56,15 @@ export function TransactionSearch() {
     return transactions
       .filter((transaction) => {
         const category = categoryById.get(transaction.categoryId);
+        const localizedCategory = category ? getCategoryName(category, t) : "";
         return (
           transaction.note.toLocaleLowerCase().includes(normalized) ||
-          category?.name.toLocaleLowerCase().includes(normalized)
+          category?.name.toLocaleLowerCase().includes(normalized) ||
+          localizedCategory.toLocaleLowerCase().includes(normalized)
         );
       })
       .slice(0, MAX_RESULTS);
-  }, [categoryById, query, transactions]);
+  }, [categoryById, query, t, transactions]);
 
   const closeSearch = () => {
     setDesktopOpen(false);
@@ -113,7 +118,7 @@ export function TransactionSearch() {
   const sharedInputProps = {
     value: query,
     onKeyDown: handleInputKeyDown,
-    placeholder: "Search transactions",
+    placeholder: t("search.placeholder"),
     role: "combobox",
     "aria-autocomplete": "list" as const,
     "aria-expanded": desktopOpen || mobileOpen,
@@ -169,7 +174,7 @@ export function TransactionSearch() {
         variant="ghost"
         size="icon-lg"
         className="md:hidden"
-        aria-label="Search transactions"
+        aria-label={t("search.title")}
         onClick={() => setMobileOpen(true)}
       >
         <Search className="size-5" />
@@ -177,9 +182,9 @@ export function TransactionSearch() {
       <Dialog open={mobileOpen} onOpenChange={setMobileOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Search transactions</DialogTitle>
+            <DialogTitle>{t("search.title")}</DialogTitle>
             <DialogDescription>
-              Search by transaction note or category.
+              {t("search.description")}
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4 space-y-3">
@@ -230,10 +235,11 @@ function SearchResults({
   onSelect: () => void;
   format: (amount: number) => string;
 }) {
+  const { intlLocale, t } = useLanguage();
   if (!query.trim()) {
     return (
       <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-        Type a note or category to start searching.
+        {t("search.start")}
       </p>
     );
   }
@@ -241,7 +247,7 @@ function SearchResults({
   if (!results.length) {
     return (
       <p className="px-4 py-8 text-center text-sm text-muted-foreground">
-        No transactions match “{query.trim()}”.
+        {t("search.noResults", { query: query.trim() })}
       </p>
     );
   }
@@ -250,7 +256,7 @@ function SearchResults({
     <div
       id="transaction-search-results"
       role="listbox"
-      aria-label="Transaction search results"
+      aria-label={t("search.results")}
       className="max-h-80 overflow-y-auto p-1"
     >
       {results.map((transaction, index) => {
@@ -258,6 +264,7 @@ function SearchResults({
         if (!category) return null;
         const Icon = CATEGORY_ICONS[category.icon];
         const isIncome = transaction.type === "income";
+        const categoryName = getCategoryName(category, t);
         return (
           <Link
             key={transaction.id}
@@ -283,12 +290,12 @@ function SearchResults({
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium">
-                {transaction.note || category.name}
+                {transaction.note || categoryName}
               </span>
               <span className="block text-xs text-muted-foreground">
-                {category.name} ·{" "}
+                {categoryName} ·{" "}
                 {fromLocalDateString(transaction.date).toLocaleDateString(
-                  undefined,
+                  intlLocale,
                   { month: "short", day: "numeric", year: "numeric" },
                 )}
               </span>

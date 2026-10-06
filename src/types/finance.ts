@@ -1,4 +1,5 @@
 import type { CurrencyCode } from "@/types/currency";
+import type { MessageKey } from "@/i18n/messages";
 
 export type TransactionType = "income" | "expense";
 
@@ -57,8 +58,8 @@ export type TransactionActionResult =
   | { ok: true; transaction: Transaction }
   | {
       ok: false;
-      message: string;
-      fieldErrors?: Record<string, string[]>;
+      message: MessageKey;
+      fieldErrors?: Record<string, MessageKey[]>;
     };
 
 export interface MonthSummary {

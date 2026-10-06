@@ -5,6 +5,7 @@ import { mapTransaction, type TransactionRow } from "@/lib/supabase/finance";
 import { transactionSchema, type TransactionInput } from "@/schemas/transaction";
 import type { TransactionActionResult } from "@/types/finance";
 import { parseDisplayAmount, toBaseVnd } from "@/utils/currency";
+import type { MessageKey } from "@/i18n/messages";
 
 async function authenticatedClient() {
   const supabase = await createClient();
@@ -18,7 +19,7 @@ async function validateCategory(
   type: TransactionInput["type"],
 ) {
   const auth = await authenticatedClient();
-  if (!auth) return { error: "Your session has expired. Please sign in again." };
+  if (!auth) return { error: "error.sessionExpired" as const };
 
   const { data, error } = await auth.supabase
     .from("categories")
@@ -28,7 +29,7 @@ async function validateCategory(
     .maybeSingle();
 
   if (error || !data) {
-    return { error: "The selected category is not valid for this transaction type." };
+    return { error: "error.invalidCategory" as const };
   }
 
   return auth;
@@ -41,8 +42,8 @@ export async function createTransactionAction(
   if (!parsed.success) {
     return {
       ok: false,
-      message: "Please review the highlighted fields.",
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      message: "error.reviewFields",
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, import("@/i18n/messages").MessageKey[]>,
     };
   }
 
@@ -67,7 +68,7 @@ export async function createTransactionAction(
     .select("id,type,amount,category_id,date,note,created_at")
     .single();
 
-  if (error) return { ok: false, message: "Could not save the transaction." };
+  if (error) return { ok: false, message: "error.saveTransaction" };
   return { ok: true, transaction: mapTransaction(data as TransactionRow) };
 }
 
@@ -79,8 +80,8 @@ export async function updateTransactionAction(
   if (!parsed.success) {
     return {
       ok: false,
-      message: "Please review the highlighted fields.",
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      message: "error.reviewFields",
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<string, import("@/i18n/messages").MessageKey[]>,
     };
   }
 
@@ -105,15 +106,15 @@ export async function updateTransactionAction(
     .select("id,type,amount,category_id,date,note,created_at")
     .maybeSingle();
 
-  if (error || !data) return { ok: false, message: "Could not update the transaction." };
+  if (error || !data) return { ok: false, message: "error.updateTransaction" };
   return { ok: true, transaction: mapTransaction(data as TransactionRow) };
 }
 
 export async function deleteTransactionAction(
   id: string,
-): Promise<{ ok: true } | { ok: false; message: string }> {
+): Promise<{ ok: true } | { ok: false; message: MessageKey }> {
   const auth = await authenticatedClient();
-  if (!auth) return { ok: false, message: "Your session has expired. Please sign in again." };
+  if (!auth) return { ok: false, message: "error.sessionExpired" };
 
   const { error } = await auth.supabase
     .from("transactions")
@@ -122,6 +123,6 @@ export async function deleteTransactionAction(
     .eq("user_id", auth.userId);
 
   return error
-    ? { ok: false, message: "Could not delete the transaction." }
+    ? { ok: false, message: "error.deleteTransaction" }
     : { ok: true };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, WalletCards } from "lucide-react";
+import { LogOut, Settings, WalletCards } from "lucide-react";
 import Link from "next/link";
 
 import { signOut } from "@/app/actions/auth";
@@ -17,6 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useFinance } from "@/context/finance-context";
+import { useLanguage } from "@/context/language-context";
+import { APP_NAME } from "@/i18n/config";
 
 interface NavbarProps {
   name: string;
@@ -38,7 +40,7 @@ export function Navbar(props: NavbarProps) {
             <WalletCards className="size-5" />
           </span>
           <span className="hidden truncate min-[430px]:inline">
-            Money Tracking
+            {APP_NAME}
           </span>
         </Link>
         <TransactionSearch />
@@ -56,6 +58,7 @@ export function Navbar(props: NavbarProps) {
 }
 
 function AccountMenu({ name, email, avatarUrl }: NavbarProps) {
+  const { t } = useLanguage();
   const initials = (name || email)
     .split(/\s+/)
     .map((part) => part[0])
@@ -69,7 +72,7 @@ function AccountMenu({ name, email, avatarUrl }: NavbarProps) {
           variant="ghost"
           size="icon-lg"
           className="rounded-full"
-          aria-label="Open account menu"
+          aria-label={t("account.openMenu")}
         >
           <Avatar>
             {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
@@ -85,6 +88,13 @@ function AccountMenu({ name, email, avatarUrl }: NavbarProps) {
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/settings">
+            <Settings className="size-4" />
+            {t("account.settings")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <form action={signOut}>
           <DropdownMenuItem asChild>
             <Button
@@ -93,7 +103,7 @@ function AccountMenu({ name, email, avatarUrl }: NavbarProps) {
               className="h-auto w-full justify-start px-2 py-2 font-normal"
             >
               <LogOut className="size-4" />
-              Sign out
+              {t("account.signOut")}
             </Button>
           </DropdownMenuItem>
         </form>

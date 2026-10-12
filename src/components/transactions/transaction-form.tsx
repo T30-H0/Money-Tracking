@@ -17,7 +17,10 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { CATEGORY_ICONS, CATEGORY_STYLES } from "@/constants/category.constants";
+import {
+  CATEGORY_ICONS,
+  CATEGORY_STYLES,
+} from "@/constants/category.constants";
 import { useFinance } from "@/context/finance-context";
 import { fromLocalDateString, toLocalDateString } from "@/lib/date";
 import { cn } from "@/lib/utils";
@@ -93,8 +96,12 @@ export function TransactionForm({
             }}
           >
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="expense">{t("transaction.type.expense")}</TabsTrigger>
-              <TabsTrigger value="income">{t("transaction.type.income")}</TabsTrigger>
+              <TabsTrigger value="expense">
+                {t("transaction.type.expense")}
+              </TabsTrigger>
+              <TabsTrigger value="income">
+                {t("transaction.type.income")}
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         )}
@@ -172,7 +179,7 @@ export function TransactionForm({
         ) : null}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="space-y-4">
         <div className="space-y-2">
           <Label>{t("transaction.date")}</Label>
           <Popover>
@@ -217,7 +224,7 @@ export function TransactionForm({
             placeholder={t("transaction.notePlaceholder")}
             maxLength={160}
             {...register("note")}
-            className="h-10 min-h-10"
+            className="h-20"
           />
         </div>
       </div>
@@ -243,8 +250,12 @@ export function TransactionForm({
           </Button>
         ) : null}
         <Button type="submit" disabled={isSubmitting} className="min-w-28">
-          {isSubmitting ? <LoaderCircle className="size-4 animate-spin" /> : null}
-          {isSubmitting ? (pendingLabel ?? t("transaction.saving")) : submitLabel}
+          {isSubmitting ? (
+            <LoaderCircle className="size-4 animate-spin" />
+          ) : null}
+          {isSubmitting
+            ? (pendingLabel ?? t("transaction.saving"))
+            : submitLabel}
         </Button>
       </div>
     </form>

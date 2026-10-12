@@ -1,0 +1,21 @@
+commit_message=$(sed -e '/^#/d' -e '/^[[:space:]]*$/d' "$1")
+
+line_count=$(printf '%s\n' "$commit_message" | wc -l | tr -d ' ')
+character_count=$(printf '%s' "$commit_message" | wc -m | tr -d ' ')
+
+if [ "$line_count" -ne 1 ]; then
+  echo "Commit message must be a single line."
+  exit 1
+fi
+
+if [ "$character_count" -gt 100 ]; then
+  echo "Commit message must not exceed 100 characters (current: $character_count)."
+  exit 1
+fi
+
+if ! printf '%s\n' "$commit_message" | grep -Eq '^(fix|feat|chore): [A-Za-z0-9]+( [A-Za-z0-9]+)*$'; then
+  echo "Invalid commit message."
+  echo "Use: fix: message, feat: message, or chore: message"
+  echo "The message may contain only letters, numbers, and single spaces."
+  exit 1
+fi

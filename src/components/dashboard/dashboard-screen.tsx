@@ -4,9 +4,12 @@ import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { SpendingChart } from "@/components/dashboard/spending-chart";
 import { useLanguage } from "@/context/language-context";
+import { useUser } from "@/context/user-context";
 
-export function DashboardScreen({ name }: { name: string }) {
+export function DashboardScreen() {
   const { t } = useLanguage();
+  const user = useUser();
+  const name = user.name || user.email || t("account.fallbackName");
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <header>

@@ -1,18 +1,14 @@
 "use client";
 
-import { ArrowLeftRight, LayoutDashboard, Settings, WalletCards } from "lucide-react";
+import { WalletCards } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/language-context";
 import { APP_NAME } from "@/i18n/config";
-
-const items = [
-  { href: "/", labelKey: "nav.dashboard" as const, icon: LayoutDashboard },
-  { href: "/transactions", labelKey: "nav.transactions" as const, icon: ArrowLeftRight },
-  { href: "/settings", labelKey: "nav.settings" as const, icon: Settings },
-];
+import { NavigationLinkContent } from "@/components/navigation/navigation-link-content";
+import { NAVIGATION_ITEMS, isNavigationItemActive } from "@/components/navigation/navigation-items";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -30,24 +26,21 @@ export function Sidebar() {
         {APP_NAME}
       </Link>
       <nav className="space-y-1 p-3" aria-label={t("nav.primary")}>
-        {items.map((item) => {
-          const active =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
-          const Icon = item.icon;
+        {NAVIGATION_ITEMS.map((item) => {
+          const active = isNavigationItemActive(pathname, item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                active && "bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary",
-              )}
+              className={cn("block h-11 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring")}
             >
-              <Icon className="size-5" />
-              {t(item.labelKey)}
+              <NavigationLinkContent
+                icon={item.icon}
+                label={t(item.labelKey)}
+                active={active}
+                variant="sidebar"
+              />
             </Link>
           );
         })}

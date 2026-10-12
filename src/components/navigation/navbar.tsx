@@ -19,14 +19,9 @@ import {
 import { useFinance } from "@/context/finance-context";
 import { useLanguage } from "@/context/language-context";
 import { APP_NAME } from "@/i18n/config";
+import { useUser } from "@/context/user-context";
 
-interface NavbarProps {
-  name: string;
-  email: string;
-  avatarUrl?: string;
-}
-
-export function Navbar(props: NavbarProps) {
+export function Navbar() {
   const { currency, currencies, setCurrency } = useFinance();
 
   return (
@@ -50,16 +45,18 @@ export function Navbar(props: NavbarProps) {
             currencies={currencies}
             onChange={setCurrency}
           />
-          <AccountMenu {...props} />
+          <AccountMenu />
         </div>
       </div>
     </header>
   );
 }
 
-function AccountMenu({ name, email, avatarUrl }: NavbarProps) {
+function AccountMenu() {
   const { t } = useLanguage();
-  const initials = (name || email)
+  const { name, email, avatarUrl } = useUser();
+  const displayName = name || email || t("account.fallbackName");
+  const initials = displayName
     .split(/\s+/)
     .map((part) => part[0])
     .join("")
@@ -82,7 +79,7 @@ function AccountMenu({ name, email, avatarUrl }: NavbarProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel className="max-w-56">
-          <span className="block truncate">{name}</span>
+          <span className="block truncate">{displayName}</span>
           <span className="block truncate text-xs font-normal text-muted-foreground">
             {email}
           </span>

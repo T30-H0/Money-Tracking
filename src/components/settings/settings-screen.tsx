@@ -8,15 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { useLanguage } from "@/context/language-context";
 import { isSupportedLocale, LANGUAGE_OPTIONS } from "@/i18n/config";
+import { useUser } from "@/context/user-context";
 
-interface SettingsScreenProps {
-  name?: string;
-  email?: string;
-  avatarUrl?: string;
-}
-
-export function SettingsScreen({ name, email, avatarUrl }: SettingsScreenProps) {
+export function SettingsScreen() {
   const { locale, setLocale, isChangingLocale, t } = useLanguage();
+  const { name, email, avatarUrl } = useUser();
   const displayName = name || t("settings.noName");
   const displayEmail = email || t("settings.noEmail");
   const initials = (name || email || "?")

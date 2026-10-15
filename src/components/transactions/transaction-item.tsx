@@ -1,15 +1,27 @@
 "use client";
 
+import { Trash2 } from "lucide-react";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
 import { CATEGORY_ICONS, CATEGORY_STYLES } from "@/constants/category.constants";
 import { useFinance } from "@/context/finance-context";
+import { getCategoryName } from "@/i18n/categories";
 import { cn } from "@/lib/utils";
 import type { Transaction } from "@/types/finance";
 import { useLanguage } from "@/context/language-context";
-import { getCategoryName } from "@/i18n/categories";
 
-export function TransactionItem({ transaction }: { transaction: Transaction }) {
+interface TransactionItemProps {
+  transaction: Transaction;
+  showDelete?: boolean;
+  onDeleteRequest?: () => void;
+}
+
+export function TransactionItem({
+  transaction,
+  showDelete = false,
+  onDeleteRequest,
+}: TransactionItemProps) {
   const { categories, format } = useFinance();
   const { t } = useLanguage();
   const category = categories.find((item) => item.id === transaction.categoryId);
@@ -19,21 +31,36 @@ export function TransactionItem({ transaction }: { transaction: Transaction }) {
   const categoryName = getCategoryName(category, t);
 
   return (
-    <Link
-      href={`/transactions/${transaction.id}`}
-      className="flex items-center gap-3 rounded-lg py-3.5 outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring"
-      aria-label={t("transactions.view", { name: transaction.note || categoryName })}
-    >
-      <span className={cn("grid size-10 shrink-0 place-items-center rounded-xl", CATEGORY_STYLES[category.color])} aria-hidden="true">
-        <Icon className="size-5" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{transaction.note || categoryName}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">{categoryName}</p>
-      </div>
-      <p className={cn("shrink-0 text-sm font-semibold tabular-nums", isIncome ? "text-emerald-600" : "text-foreground")}>
-        {isIncome ? "+" : "−"}{format(transaction.amount)}
-      </p>
-    </Link>
+    <div className="flex items-center gap-1">
+      <Link
+        href={`/transactions/${transaction.id}`}
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-3.5 outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label={t("transactions.view", { name: transaction.note || categoryName })}
+      >
+        <span className={cn("grid size-10 shrink-0 place-items-center rounded-xl", CATEGORY_STYLES[category.color])} aria-hidden="true">
+          <Icon className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{transaction.note || categoryName}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{categoryName}</p>
+        </div>
+        <p className={cn("shrink-0 text-sm font-semibold tabular-nums", isIncome ? "text-emerald-600" : "text-foreground")}>
+          {isIncome ? "+" : "−"}{format(transaction.amount)}
+        </p>
+      </Link>
+      {showDelete ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-destructive"
+          aria-label={t("transaction.delete")}
+          title={t("transaction.delete")}
+          onClick={onDeleteRequest}
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      ) : null}
+    </div>
   );
 }

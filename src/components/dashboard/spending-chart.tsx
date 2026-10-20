@@ -62,8 +62,9 @@ function buildChartData(transactions: ReturnType<typeof useFinance>["transaction
   const now = new Date();
   const expenses = transactions.filter((item) => item.type === "expense");
   if (range === "week") {
+    const daysSinceMonday = (now.getDay() + 6) % 7;
     return Array.from({ length: 7 }, (_, index) => {
-      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (6 - index));
+      const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - daysSinceMonday + index);
       const key = toLocalDateString(date);
       return { label: date.toLocaleDateString(locale, { weekday: "short" }), spending: expenses.filter((item) => item.date === key).reduce((sum, item) => sum + item.amount, 0) };
     });

@@ -48,6 +48,7 @@ interface FinanceContextValue {
   format: (amountInVnd: number, options?: Intl.NumberFormatOptions) => string;
   getTransactionsForMonth: (month: string) => Transaction[];
   getMonthSummary: (month: string) => MonthSummary;
+  totalSummary: MonthSummary;
   addTransaction: (input: TransactionInput) => Promise<TransactionActionResult>;
   updateTransaction: (id: string, input: TransactionInput) => Promise<TransactionActionResult>;
   deleteTransaction: (id: string) => Promise<{ ok: boolean; message?: MessageKey }>;
@@ -66,6 +67,16 @@ function sortTransactions(transactions: Transaction[]) {
     (a, b) =>
       b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
   );
+}
+
+function summarizeTransactions(transactions: Transaction[]): MonthSummary {
+  const income = transactions
+    .filter((item) => item.type === "income")
+    .reduce((sum, item) => sum + item.amount, 0);
+  const expense = transactions
+    .filter((item) => item.type === "expense")
+    .reduce((sum, item) => sum + item.amount, 0);
+  return { income, expense, net: income - expense };
 }
 
 export function FinanceProvider({
@@ -110,18 +121,11 @@ export function FinanceProvider({
   );
 
   const getMonthSummary = useCallback(
-    (month: string) => {
-      const items = getTransactionsForMonth(month);
-      const income = items
-        .filter((item) => item.type === "income")
-        .reduce((sum, item) => sum + item.amount, 0);
-      const expense = items
-        .filter((item) => item.type === "expense")
-        .reduce((sum, item) => sum + item.amount, 0);
-      return { income, expense, net: income - expense };
-    },
+    (month: string) => summarizeTransactions(getTransactionsForMonth(month)),
     [getTransactionsForMonth],
   );
+
+  const totalSummary = useMemo(() => summarizeTransactions(transactions), [transactions]);
 
   const addTransaction = useCallback(async (input: TransactionInput) => {
     const temporaryId = `optimistic-${crypto.randomUUID()}`;
@@ -210,11 +214,12 @@ export function FinanceProvider({
       format,
       getTransactionsForMonth,
       getMonthSummary,
+      totalSummary,
       addTransaction,
       updateTransaction,
       deleteTransaction,
     }),
-    [transactions, categories, currency, setCurrency, format, getTransactionsForMonth, getMonthSummary, addTransaction, updateTransaction, deleteTransaction],
+    [transactions, categories, currency, setCurrency, format, getTransactionsForMonth, getMonthSummary, totalSummary, addTransaction, updateTransaction, deleteTransaction],
   );
 
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;

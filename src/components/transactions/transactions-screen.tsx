@@ -1,33 +1,36 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ReportMonthPicker } from "@/components/dashboard/report-month-picker";
+import { TransactionFilterControls } from "@/components/transactions/transaction-filters";
+import { useReportingMonth, updateReportParams } from "@/hooks/use-reporting-month";
+import { filterTransactions, parseThreshold, summarize, type TransactionFilters } from "@/lib/dashboard-data";
 
-import { MonthScroller } from "@/components/transactions/month-scroller";
 import { TransactionFeed } from "@/components/transactions/transaction-feed";
 import { Card, CardContent } from "@/components/ui/card";
-import { getCurrentMonthKey, useFinance } from "@/context/finance-context";
+import { useFinance } from "@/context/finance-context";
 import { useLanguage } from "@/context/language-context";
 
 export function TransactionsScreen() {
-  const { transactions, format, getTransactionsForMonth, getMonthSummary } =
-    useFinance();
+  const { transactions, format } = useFinance();
   const { t } = useLanguage();
-  const currentMonth = getCurrentMonthKey();
-  const months = useMemo(
-    () =>
-      Array.from(
-        new Set([
-          currentMonth,
-          ...transactions.map((item) => item.date.slice(0, 7)),
-        ]),
-      )
-        .sort()
-        .reverse(),
-    [currentMonth, transactions],
-  );
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
-  const selectedTransactions = getTransactionsForMonth(selectedMonth);
-  const summary = getMonthSummary(selectedMonth);
+  const params = useSearchParams();
+  const selectedMonth = useReportingMonth();
+  if (!selectedMonth) return <Skeleton className="h-96 w-full" />;
+  const requestedType = params.get("type");
+  const threshold = parseThreshold(params.get("threshold"));
+  const filters: TransactionFilters = {
+    month: selectedMonth,
+    category: params.get("category") || undefined,
+    type: threshold !== undefined ? "expense" : requestedType === "income" || requestedType === "expense" ? requestedType : undefined,
+    threshold,
+    query: params.get("q") || undefined,
+  };
+  const selectedTransactions = filterTransactions(transactions, filters);
+  const summary = summarize(selectedTransactions);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -40,11 +43,11 @@ export function TransactionsScreen() {
         </p>
       </header>
 
-      <MonthScroller
-        months={months}
-        selectedMonth={selectedMonth}
-        onSelect={setSelectedMonth}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Button asChild variant="ghost" className="text-primary"><Link href={`/?month=${selectedMonth}`}>← {t("filters.back")}</Link></Button>
+        <ReportMonthPicker month={selectedMonth} onChange={(month) => updateReportParams({ month })} />
+      </div>
+      <TransactionFilterControls filters={filters} />
 
       <Card>
         <CardContent className="grid grid-cols-3 gap-2 p-3 pt-3 sm:gap-6 sm:p-5 sm:pt-5">
@@ -66,7 +69,8 @@ export function TransactionsScreen() {
         </CardContent>
       </Card>
 
-      <TransactionFeed transactions={selectedTransactions} />
+      <p className="text-xs text-muted-foreground" role="status">{t("dashboard.count", { count: selectedTransactions.length })}</p>
+      {selectedTransactions.length ? <TransactionFeed transactions={selectedTransactions} /> : <Card><CardContent className="py-16 text-center text-sm text-muted-foreground">{t("filters.empty")}</CardContent></Card>}
     </div>
   );
 }

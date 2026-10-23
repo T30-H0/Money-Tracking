@@ -3,24 +3,34 @@
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { SpendingChart } from "@/components/dashboard/spending-chart";
+import { CategoryChart } from "@/components/dashboard/category-chart";
+import { ReportMonthPicker } from "@/components/dashboard/report-month-picker";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useFinance } from "@/context/finance-context";
 import { useLanguage } from "@/context/language-context";
-import { useUser } from "@/context/user-context";
+import { useReportingMonth, updateReportParams } from "@/hooks/use-reporting-month";
+import { buildDashboardData } from "@/lib/dashboard-data";
 
 export function DashboardScreen() {
   const { t } = useLanguage();
-  const user = useUser();
-  const name = user.name || user.email || t("account.fallbackName");
+  const { transactions, largeExpenseThreshold } = useFinance();
+  const month = useReportingMonth();
+  if (!month) return <Skeleton className="h-96 w-full" />;
+  const data = buildDashboardData(transactions, month, largeExpenseThreshold);
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      <header>
-        <p className="text-sm font-medium text-primary">{t("dashboard.welcome", { name: name.split(" ")[0] })}</p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">{t("dashboard.title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t("dashboard.description")}</p>
+    <div className="mx-auto max-w-[1440px] space-y-5">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t("dashboard.title")}</h1>
+        <ReportMonthPicker month={month} onChange={(value) => updateReportParams({ month: value })} />
       </header>
-      <KpiCards />
-      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(340px,0.85fr)]">
-        <SpendingChart />
-        <RecentTransactions />
+      <KpiCards data={data} />
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <div className="min-w-0 max-xl:order-2"><SpendingChart month={month} /></div>
+        <CategoryChart data={data} month={month} />
+      </div>
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <RecentTransactions data={data} month={month} />
+        <RecentTransactions data={data} month={month} highlighted />
       </div>
     </div>
   );

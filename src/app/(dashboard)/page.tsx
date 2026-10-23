@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { DashboardScreen } from "@/components/dashboard/dashboard-screen";
 import { getServerTranslator } from "@/i18n/server";
@@ -8,5 +9,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function DashboardPage() {
-  return <DashboardScreen />;
+  return <Suspense><DashboardScreen /></Suspense>;
 }

@@ -2,6 +2,7 @@
 
 import { LogOut, Settings, WalletCards } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { signOut } from "@/app/actions/auth";
 import { CurrencySelector } from "@/components/finance/CurrencySelector";
@@ -23,6 +24,8 @@ import { useUser } from "@/context/user-context";
 
 export function Navbar() {
   const { currency, currencies, setCurrency } = useFinance();
+  const pathname = usePathname();
+  const showTransactionSearch = pathname === "/";
 
   return (
     <header className="fixed inset-x-0 top-0 z-30 h-16 border-b bg-background/95 backdrop-blur md:left-60">
@@ -38,8 +41,10 @@ export function Navbar() {
             {APP_NAME}
           </span>
         </Link>
-        <TransactionSearch />
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+        {showTransactionSearch ? <TransactionSearch /> : null}
+        <div
+          className={`flex shrink-0 items-center gap-1 sm:gap-2${showTransactionSearch ? "" : " ml-auto"}`}
+        >
           <CurrencySelector
             currency={currency}
             currencies={currencies}

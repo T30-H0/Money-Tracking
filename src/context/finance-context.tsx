@@ -21,6 +21,7 @@ import {
   SUPPORTED_CURRENCIES,
 } from "@/constants/currency.constants";
 import { useLanguage } from "@/context/language-context";
+import { DEFAULT_LARGE_EXPENSE_THRESHOLD, summarize as summarizeTransactions } from "@/lib/dashboard-data";
 import { monthKey } from "@/lib/date";
 import type { TransactionInput } from "@/schemas/transaction";
 import type { CurrencyCode } from "@/types/currency";
@@ -42,6 +43,7 @@ import {
 interface FinanceContextValue {
   transactions: Transaction[];
   categories: Category[];
+  largeExpenseThreshold: number;
   currency: CurrencyCode;
   currencies: typeof SUPPORTED_CURRENCIES;
   setCurrency: (currency: CurrencyCode) => void;
@@ -69,16 +71,6 @@ function sortTransactions(transactions: Transaction[]) {
   );
 }
 
-function summarizeTransactions(transactions: Transaction[]): MonthSummary {
-  const income = transactions
-    .filter((item) => item.type === "income")
-    .reduce((sum, item) => sum + item.amount, 0);
-  const expense = transactions
-    .filter((item) => item.type === "expense")
-    .reduce((sum, item) => sum + item.amount, 0);
-  return { income, expense, net: income - expense };
-}
-
 export function FinanceProvider({
   initialTransactions,
   categories,
@@ -92,7 +84,8 @@ export function FinanceProvider({
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      const stored = window.localStorage.getItem(CURRENCY_STORAGE_KEY);
+      let stored: string | null = null;
+      try { stored = window.localStorage.getItem(CURRENCY_STORAGE_KEY); } catch { /* Use detected currency. */ }
       setCurrencyState(
         isSupportedCurrency(stored) ? stored : detectCurrencyFromLocale(),
       );
@@ -209,6 +202,7 @@ export function FinanceProvider({
       transactions,
       categories,
       currency,
+      largeExpenseThreshold: DEFAULT_LARGE_EXPENSE_THRESHOLD,
       currencies: SUPPORTED_CURRENCIES,
       setCurrency,
       format,

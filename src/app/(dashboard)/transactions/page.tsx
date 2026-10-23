@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 import { TransactionsScreen } from "@/components/transactions/transactions-screen";
@@ -9,5 +10,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function TransactionsPage() {
-  return <TransactionsScreen />;
+  return <Suspense><TransactionsScreen /></Suspense>;
 }

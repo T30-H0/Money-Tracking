@@ -7,6 +7,7 @@ import {
   type DayPickerProps,
 } from "react-day-picker";
 
+import { CalendarMonthsDropdown, CalendarYearsDropdown } from "@/components/ui/calendar-dropdown";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -14,6 +15,8 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  fixedWeeks = true,
+  components,
   ...props
 }: DayPickerProps) {
   const defaultClassNames = getDefaultClassNames();
@@ -21,21 +24,24 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
+      fixedWeeks={fixedWeeks}
+      animate
       className={cn("p-3", className)}
       classNames={{
-        root: cn("w-fit", defaultClassNames.root),
-        months: "flex flex-col gap-4 sm:flex-row",
+        root: cn("relative w-fit", defaultClassNames.root),
+        months: "relative flex flex-col gap-4 sm:flex-row",
         month: "space-y-4",
-        month_caption: "relative flex items-center justify-center pt-1",
+        month_caption: "flex h-8 items-center justify-center px-8",
+        dropdowns: "flex items-center justify-center gap-1",
         caption_label: "text-sm font-medium",
-        nav: "absolute inset-x-0 top-1 flex items-center justify-between",
+        nav: "pointer-events-none absolute inset-x-0 top-0 z-10 flex h-8 items-center justify-between",
         button_previous: cn(
           buttonVariants({ variant: "outline", size: "icon-sm" }),
-          "size-7 bg-transparent p-0",
+          "pointer-events-auto size-7 bg-transparent p-0",
         ),
         button_next: cn(
           buttonVariants({ variant: "outline", size: "icon-sm" }),
-          "size-7 bg-transparent p-0",
+          "pointer-events-auto size-7 bg-transparent p-0",
         ),
         month_grid: "w-full border-collapse space-y-1",
         weekdays: "flex",
@@ -58,6 +64,8 @@ function Calendar({
         ...classNames,
       }}
       components={{
+        MonthsDropdown: CalendarMonthsDropdown,
+        YearsDropdown: CalendarYearsDropdown,
         Chevron: ({ orientation, className: iconClassName, ...iconProps }) =>
           orientation === "left" ? (
             <ChevronLeft
@@ -70,6 +78,7 @@ function Calendar({
               {...iconProps}
             />
           ),
+        ...components,
       }}
       {...props}
     />

@@ -8,7 +8,10 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/language-context";
 import { APP_NAME } from "@/i18n/config";
 import { NavigationLinkContent } from "@/components/navigation/navigation-link-content";
-import { NAVIGATION_ITEMS, isNavigationItemActive } from "@/components/navigation/navigation-items";
+import {
+  NAVIGATION_ITEMS,
+  isNavigationItemActive,
+} from "@/components/navigation/navigation-items";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -33,7 +36,9 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className={cn("block h-11 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring")}
+              className={cn(
+                "block h-11 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              )}
             >
               <NavigationLinkContent
                 icon={item.icon}

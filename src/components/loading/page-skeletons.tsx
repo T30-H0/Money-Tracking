@@ -171,3 +171,26 @@ function TransactionRowSkeleton() {
     </div>
   );
 }
+
+export function AppLoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-background" aria-busy="true">
+      <aside className="fixed inset-y-0 left-0 hidden w-60 space-y-8 border-r bg-card p-6 md:block" aria-hidden="true">
+        <Skeleton className="h-8 w-40" />
+        <div className="space-y-4">
+          {Array.from({ length: 3 }, (_, index) => <Skeleton key={index} className="h-10 w-full" />)}
+        </div>
+      </aside>
+      <div className="fixed inset-x-0 top-0 flex h-20 items-center justify-between border-b bg-card px-4 sm:px-6 md:left-60" aria-hidden="true">
+        <Skeleton className="h-9 w-36" />
+        <Skeleton className="size-9 rounded-full" />
+      </div>
+      <main className="min-h-screen px-4 pb-28 pt-24 sm:px-6 md:ml-60 md:pb-12 lg:px-8">
+        <DashboardLoadingSkeleton />
+      </main>
+      <div className="fixed inset-x-0 bottom-0 flex h-20 items-center justify-around border-t bg-card md:hidden" aria-hidden="true">
+        {Array.from({ length: 3 }, (_, index) => <Skeleton key={index} className="h-10 w-16" />)}
+      </div>
+    </div>
+  );
+}

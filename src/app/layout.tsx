@@ -1,6 +1,6 @@
 import "./globals.css";
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import type { ReactNode } from "react";
 
@@ -10,6 +10,11 @@ import { getServerTranslator } from "@/i18n/server";
 import { APP_NAME } from "@/i18n/config";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
+
+export const viewport: Viewport = {
+  colorScheme: "light",
+  themeColor: "#f6f8f7",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getServerTranslator();
@@ -22,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const { locale } = await getServerTranslator();
   return (
-    <html lang={locale} className={cn("font-sans", geist.variable)}>
+    <html lang={locale} className={cn("min-h-screen bg-background font-sans [color-scheme:light]", geist.variable)}>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <LanguageProvider initialLocale={locale}>{children}</LanguageProvider>
       </body>

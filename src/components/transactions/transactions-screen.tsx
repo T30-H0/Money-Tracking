@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TransactionsLoadingSkeleton } from "@/components/loading/page-skeletons";
 import { ReportMonthPicker } from "@/components/dashboard/report-month-picker";
 import { TransactionFilterControls } from "@/components/transactions/transaction-filters";
 import { useReportingMonth, updateReportParams } from "@/hooks/use-reporting-month";
@@ -19,7 +19,7 @@ export function TransactionsScreen() {
   const { t } = useLanguage();
   const params = useSearchParams();
   const selectedMonth = useReportingMonth();
-  if (!selectedMonth) return <Skeleton className="h-96 w-full" />;
+  if (!selectedMonth) return <TransactionsLoadingSkeleton />;
   const requestedType = params.get("type");
   const threshold = parseThreshold(params.get("threshold"));
   const filters: TransactionFilters = {

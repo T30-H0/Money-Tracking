@@ -5,7 +5,7 @@ import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { SpendingChart } from "@/components/dashboard/spending-chart";
 import { CategoryChart } from "@/components/dashboard/category-chart";
 import { ReportMonthPicker } from "@/components/dashboard/report-month-picker";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardLoadingSkeleton } from "@/components/loading/page-skeletons";
 import { useFinance } from "@/context/finance-context";
 import { useLanguage } from "@/context/language-context";
 import { useReportingMonth, updateReportParams } from "@/hooks/use-reporting-month";
@@ -15,7 +15,7 @@ export function DashboardScreen() {
   const { t } = useLanguage();
   const { transactions, largeExpenseThreshold } = useFinance();
   const month = useReportingMonth();
-  if (!month) return <Skeleton className="h-96 w-full" />;
+  if (!month) return <DashboardLoadingSkeleton />;
   const data = buildDashboardData(transactions, month, largeExpenseThreshold);
   return (
     <div className="mx-auto max-w-[1440px] space-y-5">

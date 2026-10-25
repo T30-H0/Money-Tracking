@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
+
+import { AppLoadingSkeleton } from "@/components/loading/page-skeletons";
 
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { FloatingAddButton } from "@/components/navigation/floating-add-button";
@@ -11,7 +13,15 @@ import { UserProvider, type AppUser } from "@/context/user-context";
 import { getFinanceData } from "@/lib/supabase/finance";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function AppLayout({ children }: { children: ReactNode }) {
+export default function AppLayout({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<AppLoadingSkeleton />}>
+      <AuthenticatedLayout>{children}</AuthenticatedLayout>
+    </Suspense>
+  );
+}
+
+async function AuthenticatedLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) redirect("/login");

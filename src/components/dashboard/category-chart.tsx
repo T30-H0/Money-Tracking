@@ -74,7 +74,7 @@ export function CategoryChart({ data, month }: { data: DashboardData; month: str
               </ChartContainer>
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 px-5 text-center sm:px-8">
                 <span className="text-[10px] text-muted-foreground">{t("dashboard.spending")}</span>
-                <strong className="max-w-full break-words text-sm font-semibold tabular-nums sm:text-base">{format(data.summary.expense, { notation: "compact", maximumFractionDigits: 1 })}</strong>
+                <strong className="max-w-full break-words text-sm font-semibold tabular-nums sm:text-base">{format(data.summary.expense)}</strong>
                 <span className="text-[10px] text-muted-foreground">{month}</span>
               </div>
             </div>

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { TransactionsLoadingSkeleton } from "@/components/loading/page-skeletons";
 import type { Metadata } from "next";
 
 import { TransactionsScreen } from "@/components/transactions/transactions-screen";
@@ -10,5 +11,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function TransactionsPage() {
-  return <Suspense><TransactionsScreen /></Suspense>;
+  return <Suspense fallback={<TransactionsLoadingSkeleton />}><TransactionsScreen /></Suspense>;
 }

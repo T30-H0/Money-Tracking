@@ -17,6 +17,7 @@ import {
 import { useFinance } from "@/context/finance-context";
 import type { MessageKey } from "@/i18n/messages";
 import { fromLocalDateString, toLocalDateString } from "@/lib/date";
+import { groupTransactionsByCreatedDate } from "@/lib/transactions";
 import type { Transaction } from "@/types/finance";
 import { useLanguage } from "@/context/language-context";
 
@@ -38,12 +39,7 @@ export function TransactionFeed({ transactions }: { transactions: Transaction[] 
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<MessageKey | null>(null);
-  const groups = Object.entries(
-    transactions.reduce<Record<string, Transaction[]>>((result, transaction) => {
-      (result[transaction.date] ??= []).push(transaction);
-      return result;
-    }, {}),
-  ).sort(([a], [b]) => b.localeCompare(a));
+  const groups = groupTransactionsByCreatedDate(transactions);
 
   const handleDelete = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -90,6 +86,7 @@ export function TransactionFeed({ transactions }: { transactions: Transaction[] 
                 <TransactionItem
                   key={transaction.id}
                   transaction={transaction}
+                  showDate
                   showDelete
                   onDeleteRequest={() => {
                     setDeleteError(null);

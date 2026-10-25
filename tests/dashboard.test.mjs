@@ -38,7 +38,7 @@ test('monthly totals, cash flow, donut and daily trend reconcile; income is excl
   assert.equal(buildTrendData(rows, '2026-10', 'month', 'vi-VN').reduce((sum, item) => sum + item.spending, 0), data.summary.expense);
   assert.equal(data.previous.expense, 200_000);
 });
-test('recent is limited to five, date then ID descending, includes income', () => {
+test('recent is limited to five, creation time then ID descending, includes income', () => {
   const sample = [tx('a', 1), tx('z', 1), tx('income', 1, '2026-10-24', 'income'), ...rows];
   const recent = buildDashboardData(sample, '2026-10').recent;
   assert.equal(recent.length, 5);
@@ -106,4 +106,35 @@ test('invalid query parameters are rejected and local month does not use UTC', (
   process.env.TZ = 'America/Los_Angeles';
   assert.equal(monthKey(new Date('2026-10-01T01:00:00Z')), '2026-09');
   if (previousTZ) process.env.TZ = previousTZ; else delete process.env.TZ;
+});
+
+const { sortTransactions, groupTransactionsByCreatedDate } = load('lib/transactions.ts');
+test('recent and filtered transactions follow creation time regardless of date, amount or category', () => {
+  const sample = [
+    { ...tx('z', 9_000_000, '2026-10-25', 'expense', 'a'), createdAt: '2026-10-25T01:00:00Z' },
+    { ...tx('a', 1, '2026-10-01', 'income', 'z'), createdAt: '2026-10-25T10:00:00+07:00' },
+    { ...tx('m', 500, '2026-10-24'), createdAt: '2026-10-25T02:00:00Z' },
+  ];
+  const expected = ['a', 'm', 'z'];
+  assert.deepEqual(sortTransactions(sample).map(item => item.id), expected);
+  assert.deepEqual(buildDashboardData(sample, '2026-10').recent.map(item => item.id), expected);
+  assert.deepEqual(filterTransactions(sample, { month: '2026-10' }).map(item => item.id), expected);
+  assert.deepEqual(sample.map(item => item.id), ['z', 'a', 'm']);
+  assert.deepEqual(sortTransactions(sample.map(item => ({ ...item, amount: 100, categoryId: 'changed', date: '2026-10-31' }))).map(item => item.id), expected);
+});
+test('feed groups by local creation day and keeps newest first within each day', () => {
+  const previousTZ = process.env.TZ;
+  process.env.TZ = 'Asia/Ho_Chi_Minh';
+  try {
+    const sample = [
+      { ...tx('old', 10, '2026-10-25'), createdAt: '2026-10-24T16:00:00Z' },
+      { ...tx('new', 1, '2026-10-01'), createdAt: '2026-10-24T18:00:00Z' },
+      { ...tx('middle', 100), createdAt: '2026-10-24T17:30:00Z' },
+    ];
+    assert.deepEqual(groupTransactionsByCreatedDate(sample).map(([date, items]) => [date, items.map(item => item.id)]), [
+      ['2026-10-25', ['new', 'middle']], ['2026-10-24', ['old']],
+    ]);
+  } finally {
+    if (previousTZ) process.env.TZ = previousTZ; else delete process.env.TZ;
+  }
 });

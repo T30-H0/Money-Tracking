@@ -1,4 +1,5 @@
 import { addMonths, fromLocalDateString, monthKey, toLocalDateString } from "./date";
+import { sortTransactions } from "./transactions";
 import type { Transaction } from "@/types/finance";
 
 export const DEFAULT_LARGE_EXPENSE_THRESHOLD = 500_000;
@@ -22,13 +23,13 @@ export function parseThreshold(value: string | null) {
 }
 
 export function filterTransactions(transactions: Transaction[], filters: TransactionFilters) {
-  return transactions.filter((item) =>
+  return sortTransactions(transactions.filter((item) =>
     item.date.startsWith(`${filters.month}-`) &&
     (!filters.category || item.categoryId === filters.category) &&
     (!filters.type || item.type === filters.type) &&
     (filters.threshold === undefined || (item.type === "expense" && item.amount > filters.threshold)) &&
     (!filters.query || item.note.toLocaleLowerCase().includes(filters.query.trim().toLocaleLowerCase())),
-  ).sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  ));
 }
 
 export function summarize(transactions: Transaction[]) {

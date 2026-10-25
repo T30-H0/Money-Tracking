@@ -22,6 +22,7 @@ import {
 } from "@/constants/currency.constants";
 import { useLanguage } from "@/context/language-context";
 import { DEFAULT_LARGE_EXPENSE_THRESHOLD, summarize as summarizeTransactions } from "@/lib/dashboard-data";
+import { sortTransactions } from "@/lib/transactions";
 import { monthKey } from "@/lib/date";
 import type { TransactionInput } from "@/schemas/transaction";
 import type { CurrencyCode } from "@/types/currency";
@@ -63,13 +64,6 @@ export interface FinanceProviderProps {
 }
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
-
-function sortTransactions(transactions: Transaction[]) {
-  return [...transactions].sort(
-    (a, b) =>
-      b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
-  );
-}
 
 export function FinanceProvider({
   initialTransactions,

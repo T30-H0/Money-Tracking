@@ -58,8 +58,8 @@ export async function getFinanceData(supabase: SupabaseClient) {
     supabase
       .from("transactions")
       .select("id,type,amount,category_id,date,note,created_at")
-      .order("date", { ascending: false })
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false }),
   ]);
 
   if (categoriesResult.error) throw categoriesResult.error;

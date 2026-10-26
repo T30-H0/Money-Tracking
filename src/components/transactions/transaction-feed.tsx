@@ -16,26 +16,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useFinance } from "@/context/finance-context";
 import type { MessageKey } from "@/i18n/messages";
-import { fromLocalDateString, toLocalDateString } from "@/lib/date";
+import { formatDate, toLocalDateString } from "@/lib/date";
 import { groupTransactionsByCreatedDate } from "@/lib/transactions";
 import type { Transaction } from "@/types/finance";
 import { useLanguage } from "@/context/language-context";
 
-function dateLabel(date: string, locale: string, todayLabel: string, yesterdayLabel: string) {
+function dateLabel(date: string, todayLabel: string, yesterdayLabel: string) {
   const today = new Date();
   const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
   if (date === toLocalDateString(today)) return todayLabel;
   if (date === toLocalDateString(yesterday)) return yesterdayLabel;
-  return fromLocalDateString(date).toLocaleDateString(locale, {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
+  return formatDate(date);
 }
 
 export function TransactionFeed({ transactions }: { transactions: Transaction[] }) {
   const { deleteTransaction, format } = useFinance();
-  const { intlLocale, t } = useLanguage();
+  const { t } = useLanguage();
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<MessageKey | null>(null);
@@ -73,8 +69,10 @@ export function TransactionFeed({ transactions }: { transactions: Transaction[] 
           <section key={date} className="rounded-2xl border bg-card px-4 shadow-sm sm:px-5">
             <header className="flex items-center justify-between border-b py-3">
               <div>
-                <h2 className="text-sm font-semibold">{dateLabel(date, intlLocale, t("transactions.today"), t("transactions.yesterday"))}</h2>
-                <p className="text-xs text-muted-foreground">{date}</p>
+                <h2 className="text-sm font-semibold">{dateLabel(date, t("transactions.today"), t("transactions.yesterday"))}</h2>
+                {dateLabel(date, t("transactions.today"), t("transactions.yesterday")) !== formatDate(date) && (
+                  <p className="text-xs text-muted-foreground">{formatDate(date)}</p>
+                )}
               </div>
               <div className="text-right">
                 <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{t("transactions.spent")}</p>

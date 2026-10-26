@@ -19,7 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { CategoryPicker } from "@/components/transactions/category-picker";
 import { useFinance } from "@/context/finance-context";
-import { fromLocalDateString, toLocalDateString } from "@/lib/date";
+import { formatDate, fromLocalDateString, toLocalDateString } from "@/lib/date";
 import {
   transactionSchema,
   type TransactionInput,
@@ -47,7 +47,7 @@ export function TransactionForm({
   onCancel,
 }: TransactionFormProps) {
   const { categories } = useFinance();
-  const { locale, intlLocale, t } = useLanguage();
+  const { locale, t } = useLanguage();
   const [serverError, setServerError] = useState<MessageKey | null>(null);
   const {
     register,
@@ -164,10 +164,7 @@ export function TransactionForm({
                 className="h-10 w-full justify-start font-normal"
               >
                 <CalendarIcon className="size-4 text-muted-foreground" />
-                {fromLocalDateString(selectedDate).toLocaleDateString(
-                  intlLocale,
-                  { dateStyle: "medium" },
-                )}
+                {formatDate(selectedDate)}
               </Button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-auto">

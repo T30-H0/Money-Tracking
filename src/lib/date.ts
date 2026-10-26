@@ -1,3 +1,37 @@
+// Date-only values are local calendar dates, not UTC timestamps.
+function toDisplayDate(value: Date | string): Date {
+  return typeof value === "string"
+    ? /^\d{4}-\d{2}-\d{2}$/.test(value) ? fromLocalDateString(value) : new Date(value)
+    : value;
+}
+
+export function formatDate(value: Date | string): string {
+  const date = toDisplayDate(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return toLocalDateString(date).split("-").reverse().join("-");
+}
+
+export function formatDateTime(value: Date | string): string {
+  const date = toDisplayDate(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  const time = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  return `${formatDate(date)} ${time}`;
+}
+
+export function formatMonthYear(value: Date | string): string {
+  const date = typeof value === "string" && /^\d{4}-\d{2}$/.test(value)
+    ? fromLocalDateString(`${value}-01`)
+    : toDisplayDate(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return `${String(date.getMonth() + 1).padStart(2, "0")}-${date.getFullYear()}`;
+}
+
+export function formatMonthName(date: Date, locale: string): string {
+  return locale.startsWith("vi")
+    ? `Tháng ${date.getMonth() + 1}`
+    : date.toLocaleDateString(locale, { month: "long" });
+}
+
 export function toLocalDateString(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");

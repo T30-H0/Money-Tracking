@@ -8,7 +8,9 @@ import {
 } from "react-day-picker";
 
 import { CalendarMonthsDropdown, CalendarYearsDropdown } from "@/components/ui/calendar-dropdown";
+import { CalendarRoot } from "@/components/ui/calendar-root";
 import { cn } from "@/lib/utils";
+import { formatMonthName } from "@/lib/date";
 import { buttonVariants } from "@/components/ui/button";
 
 function Calendar({
@@ -17,6 +19,7 @@ function Calendar({
   showOutsideDays = true,
   fixedWeeks = true,
   components,
+  formatters,
   ...props
 }: DayPickerProps) {
   const defaultClassNames = getDefaultClassNames();
@@ -25,7 +28,11 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       fixedWeeks={fixedWeeks}
-      animate
+      formatters={{
+        formatMonthDropdown: (date) => formatMonthName(date, props.locale?.code ?? "en-US"),
+        formatCaption: (date) => `${formatMonthName(date, props.locale?.code ?? "en-US")} ${date.getFullYear()}`,
+        ...formatters,
+      }}
       className={cn("p-3", className)}
       classNames={{
         root: cn("relative w-fit", defaultClassNames.root),
@@ -64,6 +71,7 @@ function Calendar({
         ...classNames,
       }}
       components={{
+        Root: CalendarRoot,
         MonthsDropdown: CalendarMonthsDropdown,
         YearsDropdown: CalendarYearsDropdown,
         Chevron: ({ orientation, className: iconClassName, ...iconProps }) =>

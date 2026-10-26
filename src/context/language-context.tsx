@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDate } from "@/lib/date";
+
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -25,7 +27,7 @@ interface LanguageContextValue {
   isChangingLocale: boolean;
   t: (key: MessageKey, params?: TranslationParams) => string;
   setLocale: (locale: Locale) => void;
-  formatDate: (value: Date | string, options?: Intl.DateTimeFormatOptions) => string;
+  formatDate: (value: Date | string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -66,14 +68,6 @@ export function LanguageProvider({
     [locale],
   );
 
-  const formatDate = useCallback(
-    (value: Date | string, options?: Intl.DateTimeFormatOptions) =>
-      new Intl.DateTimeFormat(toIntlLocale(locale), options).format(
-        typeof value === "string" ? new Date(value) : value,
-      ),
-    [locale],
-  );
-
   const value = useMemo(
     () => ({
       locale,
@@ -83,7 +77,7 @@ export function LanguageProvider({
       setLocale,
       formatDate,
     }),
-    [formatDate, isChangingLocale, locale, setLocale, t],
+    [isChangingLocale, locale, setLocale, t],
   );
 
   return (

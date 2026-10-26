@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CATEGORY_ICONS, CATEGORY_STYLES } from "@/constants/category.constants";
 import { useFinance } from "@/context/finance-context";
-import { fromLocalDateString } from "@/lib/date";
+import { formatDate, formatDateTime } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import type { TransactionInput } from "@/schemas/transaction";
 import type { Transaction } from "@/types/finance";
@@ -50,7 +50,7 @@ export function TransactionDetailScreen({
     updateTransaction,
     deleteTransaction,
   } = useFinance();
-  const { intlLocale, t } = useLanguage();
+  const { t } = useLanguage();
   const [transaction, setTransaction] = useState(initialTransaction);
   const [editing, setEditing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -221,18 +221,12 @@ export function TransactionDetailScreen({
               <DetailRow
                 icon={CalendarDays}
                 label={t("transaction.transactionDate")}
-                value={fromLocalDateString(transaction.date).toLocaleDateString(
-                  intlLocale,
-                  { dateStyle: "long" },
-                )}
+                value={formatDate(transaction.date)}
               />
               <DetailRow
                 icon={Clock3}
                 label={t("transaction.created")}
-                value={new Date(transaction.createdAt).toLocaleString(
-                  intlLocale,
-                  { dateStyle: "medium", timeStyle: "short" },
-                )}
+                value={formatDateTime(transaction.createdAt)}
               />
               <div className="py-5">
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">

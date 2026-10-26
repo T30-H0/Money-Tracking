@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CATEGORY_ICONS, CATEGORY_STYLES } from "@/constants/category.constants";
 import { useFinance } from "@/context/finance-context";
 import { getCategoryName } from "@/i18n/categories";
-import { fromLocalDateString } from "@/lib/date";
+import { formatDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import type { Transaction } from "@/types/finance";
 import { useLanguage } from "@/context/language-context";
@@ -26,7 +26,7 @@ export function TransactionItem({
   onDeleteRequest,
 }: TransactionItemProps) {
   const { categories, format } = useFinance();
-  const { t, intlLocale } = useLanguage();
+  const { t } = useLanguage();
   const category = categories.find((item) => item.id === transaction.categoryId);
   const Icon = CATEGORY_ICONS[category?.icon ?? "circle-ellipsis"];
   const isIncome = transaction.type === "income";
@@ -44,7 +44,7 @@ export function TransactionItem({
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{transaction.note || categoryName}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">{categoryName}{showDate && ` · ${fromLocalDateString(transaction.date).toLocaleDateString(intlLocale)}`}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{categoryName}{showDate && ` · ${formatDate(transaction.date)}`}</p>
         </div>
         <p className={cn("shrink-0 text-sm font-semibold tabular-nums", isIncome ? "text-emerald-600" : "text-foreground")}>
           {isIncome ? "+" : "−"}{format(transaction.amount)}

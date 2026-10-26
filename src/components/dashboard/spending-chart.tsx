@@ -8,6 +8,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFinance } from "@/context/finance-context";
 import { buildTrendData, type TrendRange } from "@/lib/dashboard-data";
+import { formatDate, formatMonthYear } from "@/lib/date";
 import { useLanguage } from "@/context/language-context";
 
 export function SpendingChart({ month }: { month: string }) {
@@ -48,11 +49,14 @@ export function SpendingChart({ month }: { month: string }) {
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={12} />
             <YAxis tickLine={false} axisLine={false} width={68} tickFormatter={(value) => format(Number(value), { notation: "compact", maximumFractionDigits: 1 })} />
-            <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent labelFormatter={(_, payload) => payload?.[0]?.payload?.date} formatter={(value) => <span className="font-mono font-medium">{format(Number(value))}</span>} />} />
+            <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent labelFormatter={(_, payload) => {
+              const date = payload?.[0]?.payload?.date;
+              return typeof date === "string" ? (range === "year" ? formatMonthYear(date) : formatDate(date)) : "";
+            }} formatter={(value) => <span className="font-mono font-medium">{format(Number(value))}</span>} />} />
             <Bar dataKey="spending" fill="var(--color-spending)" radius={[6, 6, 0, 0]} isAnimationActive={!reduceMotion} />
           </BarChart>
         </ChartContainer>
-        <p className="mt-3 text-center text-xs text-muted-foreground">{t("dashboard.reportingPeriod", { period: range === "year" ? month.slice(0, 4) : `${data[0]?.date} – ${data.at(-1)?.date}` })}</p>
+        <p className="mt-3 text-center text-xs text-muted-foreground">{t("dashboard.reportingPeriod", { period: range === "year" ? month.slice(0, 4) : `${formatDate(data[0]?.date ?? "")} – ${formatDate(data.at(-1)?.date ?? "")}` })}</p>
       </CardContent>
     </Card>
   );

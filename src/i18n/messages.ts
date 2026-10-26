@@ -1,7 +1,8 @@
 import type { Locale } from "@/i18n/config";
 
 const en = {
-  "meta.app.description": "A focused dashboard for tracking income and expenses.",
+  "meta.app.description":
+    "A focused dashboard for tracking income and expenses.",
   "meta.login": "Sign in",
   "meta.dashboard": "Dashboard",
   "meta.transactions": "Transactions",
@@ -18,9 +19,11 @@ const en = {
   "login.welcome": "Welcome back",
   "login.description": "Sign in to securely access your financial dashboard.",
   "login.google": "Continue with Google",
-  "login.security": "Your transactions are private and protected by row-level security.",
+  "login.security":
+    "Your transactions are private and protected by row-level security.",
   "dashboard.previousMonth": "Previous month",
   "dashboard.nextMonth": "Next month",
+  "dashboard.thisMonth": "Current",
   "dashboard.categories": "Spending by category",
   "dashboard.categoryHint": "Select a category to explore transactions",
   "dashboard.count": "{count} transactions",
@@ -67,7 +70,8 @@ const en = {
   "transactions.yesterday": "Yesterday",
   "transactions.spent": "Spent",
   "transactions.emptyMonth": "No transactions this month",
-  "transactions.emptyMonthDescription": "Use the add button or press N to record your first transaction.",
+  "transactions.emptyMonthDescription":
+    "Use the add button or press N to record your first transaction.",
   "transactions.view": "View {name}",
   "search.placeholder": "Search transactions",
   "search.title": "Search transactions",
@@ -91,7 +95,8 @@ const en = {
   "transaction.edit": "Edit",
   "transaction.delete": "Delete",
   "transaction.deleteTitle": "Delete this transaction?",
-  "transaction.deleteDescription": "This permanently removes the transaction from your account. This action cannot be undone.",
+  "transaction.deleteDescription":
+    "This permanently removes the transaction from your account. This action cannot be undone.",
   "transaction.deleting": "Deleting",
   "transaction.deleteAction": "Delete transaction",
   "transaction.editTitle": "Edit transaction",
@@ -102,7 +107,8 @@ const en = {
   "transaction.type.income": "Income",
   "transaction.type.expense": "Expense",
   "settings.title": "Settings",
-  "settings.description": "Manage your profile information and app preferences.",
+  "settings.description":
+    "Manage your profile information and app preferences.",
   "settings.profileTitle": "Basic information",
   "settings.profileDescription": "Information provided by your Google account.",
   "settings.avatar": "Profile picture",
@@ -111,7 +117,8 @@ const en = {
   "settings.noName": "No display name",
   "settings.noEmail": "No email address",
   "settings.languageTitle": "Language",
-  "settings.languageDescription": "Choose the language used throughout the app.",
+  "settings.languageDescription":
+    "Choose the language used throughout the app.",
   "settings.languageLabel": "App language",
   "settings.languageHelp": "Your choice is saved in this browser.",
   "settings.languageSaving": "Saving language preference…",
@@ -149,7 +156,8 @@ const en = {
   "error.transactionNotFound": "Transaction not found.",
   "error.deleteTransaction": "Could not delete the transaction.",
   "error.sessionExpired": "Your session has expired. Please sign in again.",
-  "error.invalidCategory": "The selected category is not valid for this transaction type.",
+  "error.invalidCategory":
+    "The selected category is not valid for this transaction type.",
   "error.reviewFields": "Please review the highlighted fields.",
   "error.saveTransaction": "Could not save the transaction.",
   "error.updateTransaction": "Could not update the transaction.",
@@ -159,7 +167,8 @@ export type MessageKey = keyof typeof en;
 export type TranslationParams = Record<string, string | number>;
 
 const vi: Record<MessageKey, string> = {
-  "meta.app.description": "Bảng điều khiển tập trung để theo dõi thu nhập và chi tiêu.",
+  "meta.app.description":
+    "Bảng điều khiển tập trung để theo dõi thu nhập và chi tiêu.",
   "meta.login": "Đăng nhập",
   "meta.dashboard": "Tổng quan",
   "meta.transactions": "Giao dịch",
@@ -174,11 +183,14 @@ const vi: Record<MessageKey, string> = {
   "account.signOut": "Đăng xuất",
   "account.fallbackName": "bạn",
   "login.welcome": "Chào mừng bạn trở lại",
-  "login.description": "Đăng nhập để truy cập an toàn vào bảng điều khiển tài chính.",
+  "login.description":
+    "Đăng nhập để truy cập an toàn vào bảng điều khiển tài chính.",
   "login.google": "Tiếp tục với Google",
-  "login.security": "Các giao dịch của bạn được bảo mật và bảo vệ bằng chính sách cấp hàng.",
+  "login.security":
+    "Các giao dịch của bạn được bảo mật và bảo vệ bằng chính sách cấp hàng.",
   "dashboard.previousMonth": "Tháng trước",
   "dashboard.nextMonth": "Tháng sau",
+  "dashboard.thisMonth": "Hiện tại",
   "dashboard.categories": "Chi tiêu theo danh mục",
   "dashboard.categoryHint": "Chọn danh mục để khám phá giao dịch",
   "dashboard.count": "{count} giao dịch",
@@ -195,7 +207,8 @@ const vi: Record<MessageKey, string> = {
   "filters.back": "Quay lại tổng quan",
   "dashboard.welcome": "Chào mừng trở lại, {name}",
   "dashboard.title": "Tổng quan tài chính",
-  "dashboard.description": "Theo dõi rõ ràng tiền của bạn đang được sử dụng ở đâu.",
+  "dashboard.description":
+    "Theo dõi rõ ràng tiền của bạn đang được sử dụng ở đâu.",
   "dashboard.monthlySpending": "Chi tiêu tháng này",
   "dashboard.noPreviousSpending": "Không có chi tiêu tháng trước",
   "dashboard.lessThanLastMonth": "ít hơn tháng trước {percent}%",
@@ -225,7 +238,8 @@ const vi: Record<MessageKey, string> = {
   "transactions.yesterday": "Hôm qua",
   "transactions.spent": "Đã chi",
   "transactions.emptyMonth": "Không có giao dịch trong tháng này",
-  "transactions.emptyMonthDescription": "Dùng nút thêm hoặc nhấn N để ghi giao dịch đầu tiên.",
+  "transactions.emptyMonthDescription":
+    "Dùng nút thêm hoặc nhấn N để ghi giao dịch đầu tiên.",
   "transactions.view": "Xem {name}",
   "search.placeholder": "Tìm kiếm giao dịch",
   "search.title": "Tìm kiếm giao dịch",
@@ -234,7 +248,8 @@ const vi: Record<MessageKey, string> = {
   "search.noResults": "Không có giao dịch nào khớp với “{query}”.",
   "search.results": "Kết quả tìm kiếm giao dịch",
   "transaction.add": "Thêm giao dịch",
-  "transaction.addDescription": "Ghi lại thu nhập hoặc chi tiêu chỉ trong vài giây.",
+  "transaction.addDescription":
+    "Ghi lại thu nhập hoặc chi tiêu chỉ trong vài giây.",
   "transaction.saving": "Đang lưu",
   "transaction.amount": "Số tiền ({currency})",
   "transaction.category": "Danh mục",
@@ -249,7 +264,8 @@ const vi: Record<MessageKey, string> = {
   "transaction.edit": "Chỉnh sửa",
   "transaction.delete": "Xóa",
   "transaction.deleteTitle": "Xóa giao dịch này?",
-  "transaction.deleteDescription": "Giao dịch sẽ bị xóa vĩnh viễn khỏi tài khoản của bạn. Thao tác này không thể hoàn tác.",
+  "transaction.deleteDescription":
+    "Giao dịch sẽ bị xóa vĩnh viễn khỏi tài khoản của bạn. Thao tác này không thể hoàn tác.",
   "transaction.deleting": "Đang xóa",
   "transaction.deleteAction": "Xóa giao dịch",
   "transaction.editTitle": "Chỉnh sửa giao dịch",
@@ -262,14 +278,16 @@ const vi: Record<MessageKey, string> = {
   "settings.title": "Cài đặt",
   "settings.description": "Quản lý thông tin hồ sơ và tùy chọn ứng dụng.",
   "settings.profileTitle": "Thông tin cơ bản",
-  "settings.profileDescription": "Thông tin được cung cấp bởi tài khoản Google của bạn.",
+  "settings.profileDescription":
+    "Thông tin được cung cấp bởi tài khoản Google của bạn.",
   "settings.avatar": "Ảnh đại diện",
   "settings.name": "Tên hiển thị",
   "settings.email": "Địa chỉ email",
   "settings.noName": "Chưa có tên hiển thị",
   "settings.noEmail": "Chưa có địa chỉ email",
   "settings.languageTitle": "Ngôn ngữ",
-  "settings.languageDescription": "Chọn ngôn ngữ được sử dụng trong toàn bộ ứng dụng.",
+  "settings.languageDescription":
+    "Chọn ngôn ngữ được sử dụng trong toàn bộ ứng dụng.",
   "settings.languageLabel": "Ngôn ngữ ứng dụng",
   "settings.languageHelp": "Lựa chọn của bạn được lưu trong trình duyệt này.",
   "settings.languageSaving": "Đang lưu tùy chọn ngôn ngữ…",
@@ -307,7 +325,8 @@ const vi: Record<MessageKey, string> = {
   "error.transactionNotFound": "Không tìm thấy giao dịch.",
   "error.deleteTransaction": "Không thể xóa giao dịch.",
   "error.sessionExpired": "Phiên đã hết hạn. Vui lòng đăng nhập lại.",
-  "error.invalidCategory": "Danh mục đã chọn không hợp lệ với loại giao dịch này.",
+  "error.invalidCategory":
+    "Danh mục đã chọn không hợp lệ với loại giao dịch này.",
   "error.reviewFields": "Vui lòng kiểm tra lại các trường được đánh dấu.",
   "error.saveTransaction": "Không thể lưu giao dịch.",
   "error.updateTransaction": "Không thể cập nhật giao dịch.",

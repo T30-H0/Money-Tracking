@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { CATEGORY_ICONS, CATEGORY_STYLES } from "@/constants/category.constants";
 import { useFinance } from "@/context/finance-context";
-import { fromLocalDateString } from "@/lib/date";
+import { formatDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import type { Category, Transaction } from "@/types/finance";
 import { useLanguage } from "@/context/language-context";
@@ -235,7 +235,7 @@ function SearchResults({
   onSelect: () => void;
   format: (amount: number) => string;
 }) {
-  const { intlLocale, t } = useLanguage();
+  const { t } = useLanguage();
   if (!query.trim()) {
     return (
       <p className="px-4 py-8 text-center text-sm text-muted-foreground">
@@ -294,10 +294,7 @@ function SearchResults({
               </span>
               <span className="block text-xs text-muted-foreground">
                 {categoryName} ·{" "}
-                {fromLocalDateString(transaction.date).toLocaleDateString(
-                  intlLocale,
-                  { month: "short", day: "numeric", year: "numeric" },
-                )}
+                {formatDate(transaction.date)}
               </span>
             </span>
             <span

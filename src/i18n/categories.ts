@@ -2,6 +2,7 @@ import type { MessageKey } from "@/i18n/messages";
 import type { Category } from "@/types/finance";
 
 const CATEGORY_KEYS: Record<string, MessageKey> = {
+  "00000000-0000-4000-8000-000000000016": "category.giftsDonation",
   "00000000-0000-4000-8000-000000000011": "category.family",
   "00000000-0000-4000-8000-000000000012": "category.pet",
   "00000000-0000-4000-8000-000000000013": "category.rental",

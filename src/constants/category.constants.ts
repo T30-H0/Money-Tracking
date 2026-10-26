@@ -1,5 +1,6 @@
 import {
   BadgeDollarSign,
+  Gift,
   Users,
   PawPrint,
   House,
@@ -19,6 +20,7 @@ import {
 import type { CategoryColor, CategoryIconName } from "@/types/finance";
 
 export const CATEGORY_ICONS = {
+  gift: Gift,
   users: Users,
   "paw-print": PawPrint,
   house: House,

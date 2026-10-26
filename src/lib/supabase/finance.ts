@@ -28,6 +28,7 @@ export interface TransactionRow {
 
 // Keep database icon names readable by older deployed clients during rollout.
 const CATEGORY_ICON_OVERRIDES: Record<string, CategoryIconName> = {
+  "00000000-0000-4000-8000-000000000016": "gift",
   "00000000-0000-4000-8000-000000000011": "users",
   "00000000-0000-4000-8000-000000000012": "paw-print",
   "00000000-0000-4000-8000-000000000013": "house",

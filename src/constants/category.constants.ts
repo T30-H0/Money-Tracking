@@ -1,5 +1,10 @@
 import {
   BadgeDollarSign,
+  Users,
+  PawPrint,
+  House,
+  Landmark,
+  ShieldCheck,
   BriefcaseBusiness,
   Car,
   CircleEllipsis,
@@ -14,6 +19,11 @@ import {
 import type { CategoryColor, CategoryIconName } from "@/types/finance";
 
 export const CATEGORY_ICONS = {
+  users: Users,
+  "paw-print": PawPrint,
+  house: House,
+  landmark: Landmark,
+  "shield-check": ShieldCheck,
   utensils: Utensils,
   "receipt-text": ReceiptText,
   car: Car,
@@ -38,3 +48,9 @@ export const CATEGORY_STYLES: Record<CategoryColor, string> = {
   indigo: "bg-indigo-100 text-indigo-700",
   teal: "bg-teal-100 text-teal-700",
 };
+
+export const QUICK_CATEGORY_IDS = [
+  "00000000-0000-4000-8000-000000000001",
+  "00000000-0000-4000-8000-000000000002",
+  "00000000-0000-4000-8000-000000000004",
+] as const;

@@ -66,6 +66,24 @@ export function parseDisplayAmount(value: string): number {
   return Number(value.replace(/,/g, "").trim());
 }
 
+/** Short chart label; currency is indicated by the app's currency selector. */
+export function formatChartAmount(
+  amountInVnd: number,
+  code: CurrencyCode,
+  locale: string,
+): string {
+  const amount = convertAmount(amountInVnd, BASE_CURRENCY, code);
+  const units = code === "VND"
+    ? [{ divisor: 1e9, suffix: "tỷ" }, { divisor: 1e6, suffix: "tr" }, { divisor: 1e3, suffix: "k" }]
+    : [{ divisor: 1e12, suffix: "T" }, { divisor: 1e9, suffix: "B" }, { divisor: 1e6, suffix: "M" }, { divisor: 1e3, suffix: "K" }];
+  const unit = units.find(({ divisor }) => Math.abs(amount) >= divisor);
+  const value = new Intl.NumberFormat(locale, {
+    maximumFractionDigits: 2,
+    useGrouping: false,
+  }).format(amount / (unit?.divisor ?? 1));
+  return `${value}${unit?.suffix ?? ""}`;
+}
+
 export function formatAmountInput(value: string): string {
   const cleaned = value.replace(/[^\d.]/g, "");
   const [whole = "", ...fractionParts] = cleaned.split(".");

@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -81,6 +82,7 @@ function QuickAddModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const { currency, addTransaction } = useFinance();
   const { t } = useLanguage();
   const defaultValues: TransactionInput = {
@@ -94,14 +96,22 @@ function QuickAddModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby="quick-add-description">
-        <DialogHeader>
-          <DialogTitle>{t("transaction.add")}</DialogTitle>
-          <DialogDescription id="quick-add-description">
+      <DialogContent
+        className="flex max-h-[92dvh] flex-col overflow-hidden p-0 sm:p-0"
+        onOpenAutoFocus={(event) => {
+          if (window.matchMedia("(pointer: coarse)").matches) {
+            event.preventDefault();
+            titleRef.current?.focus();
+          }
+        }}
+      >
+        <DialogHeader className="shrink-0 px-5 pb-3 pt-5 pr-12 sm:px-6 sm:pt-6 sm:pr-12">
+          <DialogTitle ref={titleRef} tabIndex={-1} className="outline-none">{t("transaction.add")}</DialogTitle>
+          <DialogDescription>
             {t("transaction.addDescription")}
           </DialogDescription>
         </DialogHeader>
-        <div className="mt-5">
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2 sm:px-6 sm:pb-6">
           <TransactionForm
             key={`${open}-${currency}`}
             defaultValues={defaultValues}

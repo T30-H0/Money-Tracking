@@ -4,6 +4,11 @@ import type { MessageKey } from "@/i18n/messages";
 export type TransactionType = "income" | "expense";
 
 export type CategoryIconName =
+  | "users"
+  | "paw-print"
+  | "house"
+  | "landmark"
+  | "shield-check"
   | "utensils"
   | "receipt-text"
   | "car"

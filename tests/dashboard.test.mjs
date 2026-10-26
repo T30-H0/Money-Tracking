@@ -17,6 +17,7 @@ function load(relative) {
   const compiledModule = new Module(file);
   compiled.set(file, compiledModule);
   compiledModule.require = (id) => {
+    if (id.startsWith('@/')) return load(`${id.slice(2)}.ts`);
     if (id.startsWith('.')) return load(path.relative(path.resolve(__dirname, '../src'), path.resolve(path.dirname(file), `${id}.ts`)));
     return requireModule(id);
   };
@@ -137,4 +138,31 @@ test('feed groups by local creation day and keeps newest first within each day',
   } finally {
     if (previousTZ) process.env.TZ = previousTZ; else delete process.env.TZ;
   }
+});
+
+
+test('donut labels use two decimal places and currency-specific suffixes without symbols', () => {
+  const { formatChartAmount, toBaseVnd } = load('utils/currency.ts');
+  assert.equal(formatChartAmount(1_570_000, 'VND', 'vi-VN'), '1,57tr');
+  assert.equal(formatChartAmount(1_572_000, 'VND', 'vi-VN'), '1,57tr');
+  assert.equal(formatChartAmount(toBaseVnd(1_570_000, 'USD'), 'USD', 'vi-VN'), '1,57M');
+  assert.equal(formatChartAmount(toBaseVnd(1_570_000, 'USD'), 'USD', 'en-US'), '1.57M');
+  assert.equal(formatChartAmount(1_000_000, 'VND', 'vi-VN'), '1tr');
+  assert.equal(formatChartAmount(15_700, 'VND', 'vi-VN'), '15,7k');
+  assert.equal(formatChartAmount(1_570_000_000, 'VND', 'vi-VN'), '1,57tỷ');
+  assert.equal(formatChartAmount(500, 'VND', 'vi-VN'), '500');
+  assert.equal(formatChartAmount(0, 'VND', 'vi-VN'), '0');
+  for (const code of ['EUR', 'JPY', 'AUD', 'SGD']) {
+    assert.equal(formatChartAmount(toBaseVnd(1_570_000, code), code, 'vi-VN'), '1,57M');
+  }
+});
+
+test('new category icons render from backward-compatible database rows', () => {
+  const { mapCategory } = load('lib/supabase/finance.ts');
+  const icons = ['users', 'paw-print', 'house', 'landmark', 'shield-check'];
+  icons.forEach((icon, index) => {
+    const category = mapCategory({ id: `00000000-0000-4000-8000-0000000000${11 + index}`, name: 'Category', icon: 'heart-pulse', color: 'rose', type: 'expense' });
+    assert.equal(category.icon, icon);
+  });
+  assert.equal(mapCategory({ id: 'existing', name: 'Food', icon: 'utensils', color: 'amber', type: 'expense' }).icon, 'utensils');
 });

@@ -14,6 +14,7 @@ import { getCategoryName } from "@/i18n/categories";
 import { transactionsHref, type DashboardData } from "@/lib/dashboard-data";
 import { cn } from "@/lib/utils";
 import type { CategoryColor } from "@/types/finance";
+import { formatChartAmount } from "@/utils/currency";
 
 // Color is tied to category metadata, never its rank in the selected month.
 const COLORS: Record<CategoryColor, { fill: string; dot: string }> = {
@@ -30,7 +31,7 @@ const COLORS: Record<CategoryColor, { fill: string; dot: string }> = {
 };
 
 export function CategoryChart({ data, month }: { data: DashboardData; month: string }) {
-  const { categories, format } = useFinance();
+  const { categories, format, currency } = useFinance();
   const { t, intlLocale } = useLanguage();
   const router = useRouter();
   const groups = data.groups.map((group) => {
@@ -48,9 +49,10 @@ export function CategoryChart({ data, month }: { data: DashboardData; month: str
       <CardHeader className="p-5 pb-0"><CardTitle className="text-base">{t("dashboard.categories")}</CardTitle></CardHeader>
       <CardContent className="flex flex-1 items-center justify-center p-4 sm:p-5">
         {data.summary.expense > 0 ? <Tooltip.Provider delayDuration={0}>
-          <div className="flex flex-col items-center gap-2 min-[390px]:flex-row">
-            <div className="relative w-32 shrink-0 sm:w-48 xl:w-44">
-              <ChartContainer config={{ amount: { label: t("dashboard.spending") } }} className="aspect-square h-32 w-full sm:h-48 xl:h-44">
+          <div className="flex w-full min-w-0 flex-col items-center gap-4 sm:flex-row">
+            <div className="flex w-44 shrink-0 flex-col items-center gap-2 sm:w-48 xl:w-44">
+            <div className="relative w-full">
+              <ChartContainer config={{ amount: { label: t("dashboard.spending") } }} className="aspect-square h-44 w-full sm:h-48 xl:h-44">
                 <PieChart role="group" aria-label={t("dashboard.categories")}>
                   <Pie data={groups} dataKey="amount" nameKey="name" innerRadius="65%" outerRadius="85%" paddingAngle={groups.length > 1 ? 2 : 0}
                     startAngle={90} endAngle={-270} isAnimationActive={false}
@@ -72,11 +74,12 @@ export function CategoryChart({ data, month }: { data: DashboardData; month: str
                     }} />
                 </PieChart>
               </ChartContainer>
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 px-5 text-center sm:px-8">
+              <div className="pointer-events-none absolute inset-[25%] flex flex-col items-center justify-center gap-1 text-center">
                 <span className="text-[10px] text-muted-foreground">{t("dashboard.spending")}</span>
-                <strong className="max-w-full break-words text-sm font-semibold tabular-nums sm:text-base">{format(data.summary.expense)}</strong>
+                <strong aria-label={format(data.summary.expense)} className="max-w-full break-words text-xs font-semibold leading-tight tabular-nums sm:text-sm">{formatChartAmount(data.summary.expense, currency, intlLocale)}</strong>
                 <span className="text-[10px] text-muted-foreground">{month}</span>
               </div>
+            </div>
             </div>
             <div className="grid w-full min-w-0 gap-1">
               {groups.map((group) => <Tooltip.Root key={group.categoryId}>
@@ -85,7 +88,7 @@ export function CategoryChart({ data, month }: { data: DashboardData; month: str
                     <Link href={group.href} aria-label={group.description}>
                       <span className={cn("size-2 shrink-0 rounded-full", group.colors.dot)} />
                       <span className="min-w-0 flex-1"><span className="block truncate text-xs">{group.name}</span><span className="mt-1 block text-[10px] font-normal text-muted-foreground">{group.countLabel}</span></span>
-                      <span className="text-right text-xs tabular-nums">{group.percent}<span className="mt-1 block text-[10px] font-normal text-muted-foreground">{format(group.amount)}</span></span>
+                      <span className="min-w-0 max-w-[55%] break-words text-right text-xs tabular-nums">{group.percent}<span className="mt-1 block text-[10px] font-normal text-muted-foreground">{format(group.amount)}</span></span>
                     </Link>
                   </Button>
                 </Tooltip.Trigger>

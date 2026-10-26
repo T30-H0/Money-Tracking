@@ -13,6 +13,7 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const viewport: Viewport = {
   colorScheme: "light",
+  interactiveWidget: "resizes-content",
   themeColor: "#f6f8f7",
 };
 

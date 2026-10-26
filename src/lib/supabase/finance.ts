@@ -26,11 +26,20 @@ export interface TransactionRow {
   created_at: string;
 }
 
+// Keep database icon names readable by older deployed clients during rollout.
+const CATEGORY_ICON_OVERRIDES: Record<string, CategoryIconName> = {
+  "00000000-0000-4000-8000-000000000011": "users",
+  "00000000-0000-4000-8000-000000000012": "paw-print",
+  "00000000-0000-4000-8000-000000000013": "house",
+  "00000000-0000-4000-8000-000000000014": "landmark",
+  "00000000-0000-4000-8000-000000000015": "shield-check",
+};
+
 export function mapCategory(row: CategoryRow): Category {
   return {
     id: row.id,
     name: row.name,
-    icon: row.icon as CategoryIconName,
+    icon: CATEGORY_ICON_OVERRIDES[row.id] ?? row.icon as CategoryIconName,
     color: row.color as CategoryColor,
     type: row.type as TransactionType,
   };

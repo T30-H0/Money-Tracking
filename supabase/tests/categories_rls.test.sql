@@ -15,7 +15,7 @@ set local request.jwt.claim.sub = '11111111-1111-1111-1111-111111111111';
 
 select results_eq(
   $$select count(*)::bigint from public.categories$$,
-  array[10::bigint],
+  array[15::bigint],
   'authenticated users can read all fixed categories'
 );
 

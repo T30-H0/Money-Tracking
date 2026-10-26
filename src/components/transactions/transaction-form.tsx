@@ -17,13 +17,9 @@ import {
 } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  CATEGORY_ICONS,
-  CATEGORY_STYLES,
-} from "@/constants/category.constants";
+import { CategoryPicker } from "@/components/transactions/category-picker";
 import { useFinance } from "@/context/finance-context";
 import { fromLocalDateString, toLocalDateString } from "@/lib/date";
-import { cn } from "@/lib/utils";
 import {
   transactionSchema,
   type TransactionInput,
@@ -31,7 +27,6 @@ import {
 import type { Transaction, TransactionActionResult } from "@/types/finance";
 import { formatAmountInput } from "@/utils/currency";
 import { useLanguage } from "@/context/language-context";
-import { getCategoryName } from "@/i18n/categories";
 import type { MessageKey } from "@/i18n/messages";
 
 interface TransactionFormProps {
@@ -66,7 +61,6 @@ export function TransactionForm({
   });
 
   const type = useWatch({ control, name: "type" });
-  const selectedCategory = useWatch({ control, name: "categoryId" });
   const selectedDate = useWatch({ control, name: "date" });
   const filteredCategories = categories.filter(
     (category) => category.type === type,
@@ -118,7 +112,6 @@ export function TransactionForm({
             <Input
               {...field}
               id="transaction-amount"
-              autoFocus
               inputMode="decimal"
               placeholder="0"
               aria-invalid={Boolean(errors.displayAmount)}
@@ -137,41 +130,22 @@ export function TransactionForm({
       </div>
 
       <div className="space-y-2">
-        <Label>{t("transaction.category")}</Label>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {filteredCategories.map((category) => {
-            const Icon = CATEGORY_ICONS[category.icon];
-            const selected = selectedCategory === category.id;
-            return (
-              <Button
-                key={category.id}
-                type="button"
-                variant="outline"
-                aria-pressed={selected}
-                onClick={() =>
-                  setValue("categoryId", category.id, {
-                    shouldValidate: true,
-                  })
-                }
-                className={cn(
-                  "h-auto min-h-20 flex-col gap-2 whitespace-normal px-2 py-3 text-xs",
-                  selected &&
-                    "border-primary bg-primary/5 ring-2 ring-primary/15",
-                )}
-              >
-                <span
-                  className={cn(
-                    "grid size-8 place-items-center rounded-lg",
-                    CATEGORY_STYLES[category.color],
-                  )}
-                >
-                  <Icon className="size-4" />
-                </span>
-                {getCategoryName(category, t)}
-              </Button>
-            );
-          })}
-        </div>
+        <Label htmlFor="transaction-category">{t("transaction.category")}</Label>
+        <Controller
+          control={control}
+          name="categoryId"
+          render={({ field }) => (
+            <CategoryPicker
+              categories={filteredCategories}
+              type={type}
+              value={field.value}
+              onChange={(value) => setValue("categoryId", value, { shouldValidate: true, shouldDirty: true })}
+              onBlur={field.onBlur}
+              triggerRef={field.ref}
+              invalid={Boolean(errors.categoryId)}
+            />
+          )}
+        />
         {errors.categoryId ? (
           <p className="text-xs text-destructive">
             {t(errors.categoryId.message as MessageKey)}
@@ -224,7 +198,7 @@ export function TransactionForm({
             placeholder={t("transaction.notePlaceholder")}
             maxLength={160}
             {...register("note")}
-            className="h-20"
+            className="h-20 text-base sm:text-sm"
           />
         </div>
       </div>

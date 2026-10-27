@@ -98,7 +98,11 @@ function AccountMenu() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <form action={signOut}>
-          <DropdownMenuItem asChild>
+          <DropdownMenuItem
+            asChild
+            // Keep the form mounted until the browser submits it.
+            onSelect={(event) => event.preventDefault()}
+          >
             <Button
               type="submit"
               variant="ghost"

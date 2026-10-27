@@ -1,8 +1,10 @@
 "use client";
 
-import { Languages, UserRound } from "lucide-react";
+import { Languages, LogOut, UserRound } from "lucide-react";
 
+import { signOut } from "@/app/actions/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
@@ -59,6 +61,12 @@ export function SettingsScreen() {
             </div>
             <InfoRow label={t("settings.name")} value={displayName} />
             <InfoRow label={t("settings.email")} value={displayEmail} />
+            <form action={signOut} className="border-t pt-4">
+              <Button type="submit" variant="outline" className="w-full sm:w-auto">
+                <LogOut className="size-4" />
+                {t("account.signOut")}
+              </Button>
+            </form>
           </CardContent>
         </Card>
 

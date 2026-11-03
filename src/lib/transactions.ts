@@ -1,5 +1,4 @@
 import type { Transaction } from "@/types/finance";
-import { toLocalDateString } from "./date";
 
 export function sortTransactions(transactions: Transaction[]) {
   return [...transactions].sort(
@@ -7,13 +6,13 @@ export function sortTransactions(transactions: Transaction[]) {
   );
 }
 
-export function groupTransactionsByCreatedDate(transactions: Transaction[]) {
+export function groupTransactionsByDate(transactions: Transaction[]) {
   const groups = new Map<string, Transaction[]>();
   for (const transaction of sortTransactions(transactions)) {
-    const date = toLocalDateString(new Date(transaction.createdAt));
+    const date = transaction.date;
     const items = groups.get(date) ?? [];
     items.push(transaction);
     groups.set(date, items);
   }
-  return [...groups.entries()];
+  return [...groups.entries()].sort(([a], [b]) => b.localeCompare(a));
 }

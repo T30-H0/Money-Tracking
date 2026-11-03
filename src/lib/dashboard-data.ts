@@ -84,13 +84,14 @@ export function buildTrendData(transactions: Transaction[], month: string, range
     });
   }
   const days = new Date(selected.getFullYear(), selected.getMonth() + 1, 0).getDate();
-  const end = month === monthKey(now) ? now.getDate() : days;
-  // A reporting week stays within the selected month, including its first partial week.
-  const start = range === "week" ? Math.max(1, end - 6) : 1;
-  const count = range === "week" ? end - start + 1 : days;
+  const anchor = month === monthKey(now) ? now : new Date(selected.getFullYear(), selected.getMonth(), days);
+  // Calendar weeks always run Monday–Sunday, including adjacent months.
+  const start = range === "week" ? anchor.getDate() - (anchor.getDay() + 6) % 7 : 1;
+  const count = range === "week" ? 7 : days;
   return Array.from({ length: count }, (_, index) => {
     const day = start + index;
-    const key = toLocalDateString(new Date(selected.getFullYear(), selected.getMonth(), day));
-    return { label: String(day), date: key, spending: expenses.filter((item) => item.date === key).reduce((sum, item) => sum + item.amount, 0) };
+    const date = new Date(selected.getFullYear(), selected.getMonth(), day);
+    const key = toLocalDateString(date);
+    return { label: String(date.getDate()), date: key, spending: expenses.filter((item) => item.date === key).reduce((sum, item) => sum + item.amount, 0) };
   });
 }

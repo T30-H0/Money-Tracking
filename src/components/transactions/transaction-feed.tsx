@@ -17,7 +17,7 @@ import {
 import { useFinance } from "@/context/finance-context";
 import type { MessageKey } from "@/i18n/messages";
 import { formatDate, toLocalDateString } from "@/lib/date";
-import { groupTransactionsByCreatedDate } from "@/lib/transactions";
+import { groupTransactionsByDate } from "@/lib/transactions";
 import type { Transaction } from "@/types/finance";
 import { useLanguage } from "@/context/language-context";
 
@@ -35,7 +35,7 @@ export function TransactionFeed({ transactions }: { transactions: Transaction[] 
   const [transactionToDelete, setTransactionToDelete] = useState<Transaction | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<MessageKey | null>(null);
-  const groups = groupTransactionsByCreatedDate(transactions);
+  const groups = groupTransactionsByDate(transactions);
 
   const handleDelete = async (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();

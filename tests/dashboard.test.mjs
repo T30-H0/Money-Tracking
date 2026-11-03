@@ -69,13 +69,14 @@ test('empty month, previous December and leap February work', () => {
   assert.equal(buildDashboardData([tx('dec', 7, '2025-12-31')], '2026-01').previous.expense, 7);
   assert.equal(buildTrendData([], '2024-02', 'month', 'vi-VN').length, 29);
 });
-test('week ends today for local current month; past months end on last day; year uses selected year', () => {
+test('week spans Monday to Sunday around today or selected month end; year uses selected year', () => {
   const now = new Date(2026, 9, 23);
   const week = buildTrendData(rows, '2026-10', 'week', 'vi-VN', now);
-  assert.equal(week[0].date, '2026-10-17');
-  assert.equal(week.at(-1).date, '2026-10-23');
-  assert.equal(buildTrendData(rows, '2026-09', 'week', 'vi-VN', now).at(-1).date, '2026-09-30');
-  assert.equal(buildTrendData(rows, '2026-10', 'week', 'vi-VN', new Date(2026, 9, 2)).length, 2);
+  assert.equal(week[0].date, '2026-10-19');
+  assert.equal(week.length, 7);
+  assert.equal(week.at(-1).date, '2026-10-25');
+  assert.equal(buildTrendData(rows, '2026-09', 'week', 'vi-VN', now).at(-1).date, '2026-10-04');
+  assert.equal(buildTrendData(rows, '2026-10', 'week', 'vi-VN', new Date(2026, 9, 2)).length, 7);
   const year = buildTrendData(rows, '2026-10', 'year', 'vi-VN', now);
   assert.equal(year.length, 12);
   assert.equal(year[9].spending, 17_300_000);
@@ -109,7 +110,7 @@ test('invalid query parameters are rejected and local month does not use UTC', (
   if (previousTZ) process.env.TZ = previousTZ; else delete process.env.TZ;
 });
 
-const { sortTransactions, groupTransactionsByCreatedDate } = load('lib/transactions.ts');
+const { sortTransactions, groupTransactionsByDate } = load('lib/transactions.ts');
 test('recent and filtered transactions follow creation time regardless of date, amount or category', () => {
   const sample = [
     { ...tx('z', 9_000_000, '2026-10-25', 'expense', 'a'), createdAt: '2026-10-25T01:00:00Z' },
@@ -123,17 +124,17 @@ test('recent and filtered transactions follow creation time regardless of date, 
   assert.deepEqual(sample.map(item => item.id), ['z', 'a', 'm']);
   assert.deepEqual(sortTransactions(sample.map(item => ({ ...item, amount: 100, categoryId: 'changed', date: '2026-10-31' }))).map(item => item.id), expected);
 });
-test('feed groups by local creation day and keeps newest first within each day', () => {
+test('feed groups by selected date descending and keeps newest first within each day', () => {
   const previousTZ = process.env.TZ;
   process.env.TZ = 'Asia/Ho_Chi_Minh';
   try {
     const sample = [
       { ...tx('old', 10, '2026-10-25'), createdAt: '2026-10-24T16:00:00Z' },
       { ...tx('new', 1, '2026-10-01'), createdAt: '2026-10-24T18:00:00Z' },
-      { ...tx('middle', 100), createdAt: '2026-10-24T17:30:00Z' },
+      { ...tx('middle', 100, '2026-10-01'), createdAt: '2026-10-24T17:30:00Z' },
     ];
-    assert.deepEqual(groupTransactionsByCreatedDate(sample).map(([date, items]) => [date, items.map(item => item.id)]), [
-      ['2026-10-25', ['new', 'middle']], ['2026-10-24', ['old']],
+    assert.deepEqual(groupTransactionsByDate(sample).map(([date, items]) => [date, items.map(item => item.id)]), [
+      ['2026-10-25', ['old']], ['2026-10-01', ['new', 'middle']],
     ]);
   } finally {
     if (previousTZ) process.env.TZ = previousTZ; else delete process.env.TZ;
@@ -165,4 +166,60 @@ test('new category icons render from backward-compatible database rows', () => {
     assert.equal(category.icon, icon);
   });
   assert.equal(mapCategory({ id: 'existing', name: 'Food', icon: 'utensils', color: 'amber', type: 'expense' }).icon, 'utensils');
+});
+
+
+test('backdated transactions and date edits move daily spending between groups', () => {
+  const sample = [
+    { ...tx('backdated', 100, '2026-11-02'), createdAt: '2026-11-03T08:00:00Z' },
+    tx('today', 200, '2026-11-03'),
+    tx('income', 500, '2026-11-02', 'income'),
+  ];
+  const daily = (items) => groupTransactionsByDate(items).map(([date, group]) => [
+    date, group.filter(item => item.type === 'expense').reduce((sum, item) => sum + item.amount, 0),
+  ]);
+  assert.deepEqual(daily(sample), [['2026-11-03', 200], ['2026-11-02', 100]]);
+  const edited = sample.map(item => item.id === 'backdated' ? { ...item, date: '2026-11-03' } : item);
+  assert.deepEqual(daily(edited), [['2026-11-03', 300], ['2026-11-02', 0]]);
+  assert.deepEqual(groupTransactionsByDate([]), []);
+});
+
+test('calendar weeks include adjacent months, future days, Monday and Sunday anchors', () => {
+  const cases = [
+    ['2026-11', new Date(2026, 10, 3), '2026-11-02', '2026-11-08'],
+    ['2026-11', new Date(2026, 10, 1), '2026-10-26', '2026-11-01'],
+    ['2026-11', new Date(2026, 10, 2), '2026-11-02', '2026-11-08'],
+    ['2027-01', new Date(2027, 0, 1), '2026-12-28', '2027-01-03'],
+    ['2026-12', new Date(2026, 10, 3), '2026-12-28', '2027-01-03'],
+    ['2024-02', new Date(2026, 10, 3), '2024-02-26', '2024-03-03'],
+  ];
+  for (const [month, now, first, last] of cases) {
+    const week = buildTrendData([], month, 'week', 'vi-VN', now);
+    assert.equal(week.length, 7);
+    assert.equal(week[0].date, first);
+    assert.equal(week.at(-1).date, last);
+    assert.ok(week.every(item => item.spending === 0));
+    assert.ok(week.every(item => item.label === String(Number(item.date.slice(-2)))));
+  }
+  const sample = [tx('previous-month', 10, '2026-12-28'), tx('next-month', 20, '2027-01-03'),
+    tx('income', 100, '2027-01-01', 'income'), tx('outside', 999, '2026-12-27')];
+  const week = buildTrendData(sample, '2027-01', 'week', 'vi-VN', new Date(2027, 0, 1));
+  assert.deepEqual(week.map(item => item.spending), [10, 0, 0, 0, 0, 0, 20]);
+});
+
+test('selected dates and week boundaries remain local across time zones', () => {
+  const previousTZ = process.env.TZ;
+  try {
+    for (const timezone of ['Asia/Ho_Chi_Minh', 'America/Los_Angeles']) {
+      process.env.TZ = timezone;
+      const sample = [{ ...tx('local', 10, '2026-11-02'), createdAt: '2026-11-03T00:00:00Z' }];
+      assert.equal(groupTransactionsByDate(sample)[0][0], '2026-11-02');
+      const week = buildTrendData(sample, '2026-11', 'week', 'vi-VN', new Date(2026, 10, 3));
+      assert.equal(week[0].date, '2026-11-02');
+      assert.equal(week.at(-1).date, '2026-11-08');
+      assert.equal(week[0].spending, 10);
+    }
+  } finally {
+    if (previousTZ) process.env.TZ = previousTZ; else delete process.env.TZ;
+  }
 });

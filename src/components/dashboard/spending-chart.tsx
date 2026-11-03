@@ -47,7 +47,7 @@ export function SpendingChart({ month }: { month: string }) {
         <ChartContainer config={chartConfig} className="h-60 w-full aspect-auto">
           <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={12} />
+            <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={12} interval={range === "week" ? 0 : "preserveEnd"} />
             <YAxis tickLine={false} axisLine={false} width={68} tickFormatter={(value) => format(Number(value), { notation: "compact", maximumFractionDigits: 1 })} />
             <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent labelFormatter={(_, payload) => {
               const date = payload?.[0]?.payload?.date;

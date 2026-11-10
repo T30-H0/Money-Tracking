@@ -47,7 +47,7 @@ export function SpendingChart({ month }: { month: string }) {
         <ChartContainer config={chartConfig} className="h-60 w-full aspect-auto">
           <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} minTickGap={12} interval={range === "week" ? 0 : "preserveEnd"} />
+            <XAxis dataKey="label" tick={range === "week" ? <WeekdayTick /> : undefined} tickLine={false} axisLine={false} tickMargin={8} minTickGap={12} interval={range === "week" ? 0 : "preserveEnd"} />
             <YAxis tickLine={false} axisLine={false} width={68} tickFormatter={(value) => format(Number(value), { notation: "compact", maximumFractionDigits: 1 })} />
             <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent labelFormatter={(_, payload) => {
               const date = payload?.[0]?.payload?.date;
@@ -59,5 +59,16 @@ export function SpendingChart({ month }: { month: string }) {
         <p className="mt-3 text-center text-xs text-muted-foreground">{t("dashboard.reportingPeriod", { period: range === "year" ? month.slice(0, 4) : `${formatDate(data[0]?.date ?? "")} – ${formatDate(data.at(-1)?.date ?? "")}` })}</p>
       </CardContent>
     </Card>
+  );
+}
+
+function WeekdayTick({ x = 0, y = 0, payload }: { x?: number; y?: number; payload?: { value: string } }) {
+  const label = payload?.value ?? "";
+  const compact = label === "Chủ nhật" ? "CN" : label.replace("Thứ ", "T");
+  return (
+    <text x={x} y={y} dy={12} textAnchor="middle" className="fill-muted-foreground text-xs">
+      <tspan className="sm:hidden">{compact}</tspan>
+      <tspan className="hidden sm:inline">{label}</tspan>
+    </text>
   );
 }

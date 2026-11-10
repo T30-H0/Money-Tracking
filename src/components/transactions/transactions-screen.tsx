@@ -25,6 +25,7 @@ export function TransactionsScreen() {
   const filters: TransactionFilters = {
     month: selectedMonth,
     category: params.get("category") || undefined,
+    group: params.get("group") || undefined,
     type: threshold !== undefined ? "expense" : requestedType === "income" || requestedType === "expense" ? requestedType : undefined,
     threshold,
     query: params.get("q") || undefined,

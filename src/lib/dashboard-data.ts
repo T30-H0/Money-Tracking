@@ -1,4 +1,5 @@
 import { addMonths, fromLocalDateString, monthKey, toLocalDateString } from "./date";
+import { getCategoryGroupId } from "./categories";
 import { sortTransactions } from "./transactions";
 import type { Transaction } from "@/types/finance";
 
@@ -7,6 +8,7 @@ export type TrendRange = "week" | "month" | "year";
 export interface TransactionFilters {
   month: string;
   category?: string;
+  group?: string;
   type?: "income" | "expense";
   threshold?: number;
   query?: string;
@@ -25,7 +27,7 @@ export function parseThreshold(value: string | null) {
 export function filterTransactions(transactions: Transaction[], filters: TransactionFilters) {
   return sortTransactions(transactions.filter((item) =>
     item.date.startsWith(`${filters.month}-`) &&
-    (!filters.category || item.categoryId === filters.category) &&
+    (filters.category ? item.categoryId === filters.category : !filters.group || getCategoryGroupId(item.categoryId) === filters.group) &&
     (!filters.type || item.type === filters.type) &&
     (filters.threshold === undefined || (item.type === "expense" && item.amount > filters.threshold)) &&
     (!filters.query || item.note.toLocaleLowerCase().includes(filters.query.trim().toLocaleLowerCase())),
@@ -67,6 +69,7 @@ export type DashboardData = ReturnType<typeof buildDashboardData>;
 export function transactionsHref(filters: TransactionFilters) {
   const params = new URLSearchParams({ month: filters.month });
   if (filters.category) params.set("category", filters.category);
+  else if (filters.group) params.set("group", filters.group);
   if (filters.type) params.set("type", filters.type);
   if (filters.threshold !== undefined) params.set("threshold", String(filters.threshold));
   if (filters.query) params.set("q", filters.query);
@@ -92,6 +95,11 @@ export function buildTrendData(transactions: Transaction[], month: string, range
     const day = start + index;
     const date = new Date(selected.getFullYear(), selected.getMonth(), day);
     const key = toLocalDateString(date);
-    return { label: String(date.getDate()), date: key, spending: expenses.filter((item) => item.date === key).reduce((sum, item) => sum + item.amount, 0) };
+    const label = range === "week"
+      ? locale.startsWith("vi")
+        ? date.getDay() === 0 ? "Chủ nhật" : `Thứ ${date.getDay() + 1}`
+        : date.toLocaleDateString(locale, { weekday: "short" })
+      : String(date.getDate());
+    return { label, date: key, spending: expenses.filter((item) => item.date === key).reduce((sum, item) => sum + item.amount, 0) };
   });
 }

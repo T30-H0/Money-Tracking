@@ -199,7 +199,7 @@ test('calendar weeks include adjacent months, future days, Monday and Sunday anc
     assert.equal(week[0].date, first);
     assert.equal(week.at(-1).date, last);
     assert.ok(week.every(item => item.spending === 0));
-    assert.ok(week.every(item => item.label === String(Number(item.date.slice(-2)))));
+    assert.deepEqual(week.map(item => item.label), ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"]);
   }
   const sample = [tx('previous-month', 10, '2026-12-28'), tx('next-month', 20, '2027-01-03'),
     tx('income', 100, '2027-01-01', 'income'), tx('outside', 999, '2026-12-27')];
@@ -222,4 +222,104 @@ test('selected dates and week boundaries remain local across time zones', () => 
   } finally {
     if (previousTZ) process.env.TZ = previousTZ; else delete process.env.TZ;
   }
+});
+
+const categoryId = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+const { getCategoryGroupId, getCategorySections, aggregateCategoryGroups } = load('lib/categories.ts');
+const { CATEGORY_CHILDREN } = load('constants/category-hierarchy.ts');
+const { getCategoryName } = load('i18n/categories.ts');
+const { translate } = load('i18n/messages.ts');
+const shoppingRows = [
+  tx('parent', 100_000, '2026-10-12', 'expense', categoryId(4)),
+  tx('cosmetics', 150_000, '2026-10-12', 'expense', categoryId(23)),
+  tx('clothing', 200_000, '2026-10-12', 'expense', categoryId(24)),
+  tx('shopping-other', 50_000, '2026-10-12', 'expense', categoryId(36)),
+  tx('food', 80_000, '2026-10-12', 'expense', categoryId(1)),
+];
+
+test('shopping group includes parent and every child exactly once; exact filters preserve selected IDs', () => {
+  const group = filterTransactions(shoppingRows, { month: '2026-10', group: categoryId(4) });
+  assert.equal(group.length, 4);
+  assert.equal(group.reduce((sum, item) => sum + item.amount, 0), 500_000);
+  for (const row of shoppingRows) {
+    const exact = filterTransactions(shoppingRows, { month: '2026-10', category: row.categoryId });
+    assert.deepEqual(exact, [row]);
+  }
+  assert.equal(getCategoryName({ id: categoryId(4) }, (key) => translate('vi', key)), 'Mua sắm');
+  assert.equal(getCategoryName({ id: categoryId(24) }, (key) => translate('vi', key)), 'Quần áo');
+  assert.equal(getCategoryName({ id: categoryId(36) }, (key) => translate('vi', key)), 'Mua sắm khác');
+});
+
+test('group drilldown preserves month, type, search, threshold and exact category precedence', () => {
+  const filters = { month: '2026-10', group: categoryId(4), type: 'expense', query: 'clothing', threshold: 150_000 };
+  const selected = filterTransactions([...shoppingRows, tx('other-month', 500_000, '2026-09-12', 'expense', categoryId(24))], filters);
+  assert.deepEqual(selected.map((item) => item.id), ['clothing']);
+  const url = new URL(transactionsHref(filters), 'https://example.test');
+  assert.equal(url.searchParams.get('group'), categoryId(4));
+  assert.equal(url.searchParams.get('month'), filters.month);
+  assert.equal(url.searchParams.get('q'), filters.query);
+  assert.equal(url.searchParams.get('threshold'), '150000');
+  const conflict = { month: '2026-10', group: categoryId(4), category: categoryId(1) };
+  assert.deepEqual(filterTransactions(shoppingRows, conflict).map((item) => item.id), ['food']);
+  assert.equal(new URL(transactionsHref(conflict), 'https://example.test').searchParams.has('group'), false);
+  assert.deepEqual(filterTransactions(shoppingRows, { month: '2026-10', group: 'unknown' }), []);
+});
+
+test('group chart reconciles with detail chart, excludes income and follows category edits', () => {
+  const sample = [...shoppingRows, tx('income-parent', 900_000, '2026-10-12', 'income', categoryId(41)), tx('salary', 1_000_000, '2026-10-12', 'income', categoryId(8))];
+  const data = buildDashboardData(sample, '2026-10');
+  const groups = aggregateCategoryGroups(data.groups);
+  const shopping = groups.find((group) => group.categoryId === categoryId(4));
+  assert.equal(shopping.amount, 500_000);
+  assert.equal(shopping.count, 4);
+  assert.equal(groups.reduce((sum, group) => sum + group.amount, 0), data.summary.expense);
+  assert.equal(groups.reduce((sum, group) => sum + group.count, 0), 5);
+  assert.ok(Math.abs(groups.reduce((sum, group) => sum + group.share, 0) - 1) < 1e-10);
+  assert.equal(filterTransactions(sample, { month: '2026-10', group: categoryId(41), type: 'income' }).length, 2);
+  const moved = shoppingRows.map((row) => row.id === 'clothing' ? { ...row, categoryId: categoryId(1) } : row);
+  assert.equal(filterTransactions(moved, { month: '2026-10', group: categoryId(4) }).length, 3);
+  assert.deepEqual(aggregateCategoryGroups([]), []);
+});
+
+test('hierarchy has unique children, selectable parents, food first and safe unknown category fallback', () => {
+  const children = Object.values(CATEGORY_CHILDREN).flat();
+  assert.equal(new Set(children).size, children.length);
+  for (const [parent, childIds] of Object.entries(CATEGORY_CHILDREN)) {
+    assert.equal(children.includes(parent), false);
+    assert.equal(getCategoryGroupId(parent), parent);
+    childIds.forEach((id) => assert.equal(getCategoryGroupId(id), parent));
+  }
+  const categories = Array.from({ length: 41 }, (_, i) => ({ id: categoryId(i + 1), type: [8, 9, 10, 41].includes(i + 1) ? 'income' : 'expense' }));
+  const sections = getCategorySections(categories);
+  assert.equal(sections[0].root.id, categoryId(1));
+  const flattened = sections.flatMap(({ root, children }) => [root, ...children]);
+  assert.equal(flattened.length, 41);
+  assert.equal(new Set(flattened.map((item) => item.id)).size, 41);
+  assert.deepEqual(getCategorySections([{ id: 'custom', type: 'expense' }]), [{ root: { id: 'custom', type: 'expense' }, children: [] }]);
+  assert.equal(getCategorySections([{ id: categoryId(24), type: 'expense' }])[0].root.id, categoryId(24));
+  assert.equal(getCategoryGroupId('custom'), 'custom');
+});
+
+test('migration catalog matches hierarchy, translations and existing supported icons', () => {
+  const migration = fs.readFileSync(path.resolve(__dirname, '../supabase/migrations/20261106034209_add_category_hierarchy.sql'), 'utf8');
+  const inserts = migration.split('on conflict')[0];
+  const catalog = [...inserts.matchAll(/\('([^']+)', '([^']+)', '([^']+)', '([^']+)', '([^']+)'\)/g)];
+  assert.equal(catalog.length, 25);
+  assert.equal(new Set(catalog.map((row) => row[1])).size, 25);
+  for (const [, id, name, icon, color, type] of catalog) {
+    assert.ok(['receipt-text', 'car', 'shopping-bag', 'heart-pulse', 'briefcase-business', 'wallet-cards'].includes(icon));
+    assert.ok(color);
+    assert.equal(type, id === categoryId(41) ? 'income' : 'expense');
+    for (const locale of ['en', 'vi']) {
+      const translated = getCategoryName({ id, name: 'unmapped' }, (key) => translate(locale, key));
+      assert.ok(translated && translated !== 'unmapped', `${name} missing ${locale} translation`);
+    }
+  }
+});
+
+test('trend labels use localized weekdays only in week view', () => {
+  const now = new Date(2027, 0, 1);
+  assert.deepEqual(buildTrendData([], '2027-01', 'week', 'en-US', now).map(item => item.label), ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+  assert.deepEqual(buildTrendData([], '2027-01', 'month', 'vi-VN', now).slice(0, 3).map(item => item.label), ['1', '2', '3']);
+  assert.equal(buildTrendData([], '2027-01', 'year', 'en-US', now)[0].label, 'Jan');
 });

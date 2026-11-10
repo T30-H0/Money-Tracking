@@ -48,6 +48,7 @@ export function TransactionForm({
 }: TransactionFormProps) {
   const { categories } = useFinance();
   const { locale, t } = useLanguage();
+  const [dateOpen, setDateOpen] = useState(false);
   const [serverError, setServerError] = useState<MessageKey | null>(null);
   const {
     register,
@@ -156,7 +157,7 @@ export function TransactionForm({
       <div className="space-y-4">
         <div className="space-y-2">
           <Label>{t("transaction.date")}</Label>
-          <Popover>
+          <Popover open={dateOpen} onOpenChange={setDateOpen}>
             <PopoverTrigger asChild>
               <Button
                 type="button"
@@ -171,13 +172,17 @@ export function TransactionForm({
               <Calendar
                 locale={locale === "vi" ? vi : enUS}
                 mode="single"
+                required
+                defaultMonth={fromLocalDateString(selectedDate)}
                 selected={fromLocalDateString(selectedDate)}
-                onSelect={(date) =>
-                  date &&
+                onSelect={(date) => {
+                  if (!date) return;
                   setValue("date", toLocalDateString(date), {
                     shouldValidate: true,
-                  })
-                }
+                    shouldDirty: true,
+                  });
+                  setDateOpen(false);
+                }}
               />
             </PopoverContent>
           </Popover>

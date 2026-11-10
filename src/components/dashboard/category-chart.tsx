@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { aggregateCategoryGroups } from "@/lib/categories";
 import { useRouter } from "next/navigation";
 import { Tooltip } from "radix-ui";
 import { Pie, PieChart, Sector } from "recharts";
@@ -34,19 +37,29 @@ export function CategoryChart({ data, month }: { data: DashboardData; month: str
   const { categories, format, currency } = useFinance();
   const { t, intlLocale } = useLanguage();
   const router = useRouter();
-  const groups = data.groups.map((group) => {
+  const [mode, setMode] = useState("group");
+  const rows = mode === "group" ? aggregateCategoryGroups(data.groups) : data.groups;
+  const groups = rows.map((group) => {
     const category = categories.find((item) => item.id === group.categoryId);
     const name = category ? getCategoryName(category, t) : t("dashboard.unknownCategory");
     const percent = Intl.NumberFormat(intlLocale, { style: "percent", maximumFractionDigits: 1 }).format(group.share);
     const count = t("dashboard.count", { count: group.count });
     return { ...group, name, percent, countLabel: count, colors: COLORS[category?.color ?? "slate"],
-      href: transactionsHref({ month, type: "expense", category: group.categoryId }),
+      href: transactionsHref({ month, type: "expense", ...(mode === "group" ? { group: group.categoryId } : { category: group.categoryId }) }),
       description: `${name} · ${percent} · ${format(group.amount)} · ${count}`,
     };
   });
   return (
     <Card className="flex min-w-0 flex-col shadow-none">
-      <CardHeader className="p-5 pb-0"><CardTitle className="text-base">{t("dashboard.categories")}</CardTitle></CardHeader>
+      <CardHeader className="gap-3 p-5 pb-0">
+        <CardTitle className="text-base">{t("dashboard.categories")}</CardTitle>
+        <Tabs value={mode} onValueChange={setMode}>
+          <TabsList aria-label={t("categories.viewMode")}>
+            <TabsTrigger value="group">{t("categories.byGroup")}</TabsTrigger>
+            <TabsTrigger value="category">{t("categories.byCategory")}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </CardHeader>
       <CardContent className="flex flex-1 items-center justify-center p-4 sm:p-5">
         {data.summary.expense > 0 ? <Tooltip.Provider delayDuration={0}>
           <div className="flex w-full min-w-0 flex-col items-center gap-4 sm:flex-row">

@@ -34,10 +34,12 @@ import type { Category, Transaction } from "@/types/finance";
 import { useLanguage } from "@/context/language-context";
 import { getCategoryName } from "@/i18n/categories";
 
-const MAX_RESULTS = 8;
+import { useFinanceData } from "@/hooks/use-finance-data";
+import { useTransactionSearch } from "@/hooks/use-transaction-search";
+import { DataLoadError } from "@/components/loading/data-load-error";
 
 export function TransactionSearch() {
-  const { transactions, categories, format } = useFinance();
+  const { categories, format } = useFinance();
   const { t } = useLanguage();
   const router = useRouter();
   const desktopInputRef = useRef<HTMLInputElement>(null);
@@ -50,21 +52,9 @@ export function TransactionSearch() {
     () => new Map(categories.map((category) => [category.id, category])),
     [categories],
   );
-  const results = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase();
-    if (!normalized) return [];
-    return transactions
-      .filter((transaction) => {
-        const category = categoryById.get(transaction.categoryId);
-        const localizedCategory = category ? getCategoryName(category, t) : "";
-        return (
-          transaction.note.toLocaleLowerCase().includes(normalized) ||
-          category?.name.toLocaleLowerCase().includes(normalized) ||
-          localizedCategory.toLocaleLowerCase().includes(normalized)
-        );
-      })
-      .slice(0, MAX_RESULTS);
-  }, [categoryById, query, t, transactions]);
+  const categoriesLoading = useFinanceData(desktopOpen || mobileOpen ? ["categories"] : []);
+  const search = useTransactionSearch(query, categories, (desktopOpen || mobileOpen) && categoriesLoading.ready);
+  const results = search.results;
 
   const closeSearch = () => {
     setDesktopOpen(false);
@@ -157,6 +147,9 @@ export function TransactionSearch() {
             className="w-[var(--radix-popover-anchor-width)] overflow-hidden"
           >
             <SearchResults
+              loading={search.loading}
+              error={categoriesLoading.error || search.error}
+              retry={categoriesLoading.error ? categoriesLoading.retry : search.retry}
               query={query}
               results={results}
               categoryById={categoryById}
@@ -203,6 +196,9 @@ export function TransactionSearch() {
               />
             </div>
             <SearchResults
+              loading={search.loading}
+              error={categoriesLoading.error || search.error}
+              retry={categoriesLoading.error ? categoriesLoading.retry : search.retry}
               query={query}
               results={results}
               categoryById={categoryById}
@@ -219,6 +215,7 @@ export function TransactionSearch() {
 }
 
 function SearchResults({
+  loading, error, retry,
   query,
   results,
   categoryById,
@@ -227,6 +224,9 @@ function SearchResults({
   onSelect,
   format,
 }: {
+  loading: boolean;
+  error: boolean;
+  retry: () => void;
   query: string;
   results: Transaction[];
   categoryById: Map<string, Category>;
@@ -244,6 +244,8 @@ function SearchResults({
     );
   }
 
+  if (error) return <DataLoadError retry={retry} />;
+  if (loading) return <p role="status" className="p-4 text-sm text-muted-foreground">{t("common.loading")}</p>;
   if (!results.length) {
     return (
       <p className="px-4 py-8 text-center text-sm text-muted-foreground">
@@ -267,6 +269,7 @@ function SearchResults({
         const categoryName = getCategoryName(category, t);
         return (
           <Link
+            prefetch={false}
             key={transaction.id}
             id={`transaction-search-${transaction.id}`}
             role="option"

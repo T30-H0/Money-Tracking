@@ -1,5 +1,8 @@
 "use client";
 
+import { useFinanceData } from "@/hooks/use-finance-data";
+import { DataLoadError } from "@/components/loading/data-load-error";
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -19,7 +22,9 @@ export function TransactionsScreen() {
   const { t } = useLanguage();
   const params = useSearchParams();
   const selectedMonth = useReportingMonth();
-  if (!selectedMonth) return <TransactionsLoadingSkeleton />;
+  const loading = useFinanceData(selectedMonth ? ["categories", `month:${selectedMonth}`] : []);
+  if (loading.error) return <DataLoadError retry={loading.retry} />;
+  if (!selectedMonth || !loading.ready) return <TransactionsLoadingSkeleton />;
   const requestedType = params.get("type");
   const threshold = parseThreshold(params.get("threshold"));
   const filters: TransactionFilters = {

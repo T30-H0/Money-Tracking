@@ -3,6 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
+import { useFinanceData } from "@/hooks/use-finance-data";
+import { trendResources } from "@/lib/finance-resources";
+import { DataLoadError } from "@/components/loading/data-load-error";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +20,7 @@ export function SpendingChart({ month }: { month: string }) {
   const { transactions, format } = useFinance();
   const { intlLocale, t } = useLanguage();
   const [range, setRange] = useState<TrendRange>("month");
+  const loading = useFinanceData(trendResources(month, range));
   const [reduceMotion, setReduceMotion] = useState(false);
 
   useEffect(() => {
@@ -44,19 +50,21 @@ export function SpendingChart({ month }: { month: string }) {
         </Tabs>
       </CardHeader>
       <CardContent className="p-3 pt-4 sm:p-5 sm:pt-4">
-        <ChartContainer config={chartConfig} className="h-60 w-full aspect-auto">
-          <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis dataKey="label" tick={range === "week" ? <WeekdayTick /> : undefined} tickLine={false} axisLine={false} tickMargin={8} minTickGap={12} interval={range === "week" ? 0 : "preserveEnd"} />
-            <YAxis tickLine={false} axisLine={false} width={68} tickFormatter={(value) => format(Number(value), { notation: "compact", maximumFractionDigits: 1 })} />
-            <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent labelFormatter={(_, payload) => {
-              const date = payload?.[0]?.payload?.date;
-              return typeof date === "string" ? (range === "year" ? formatMonthYear(date) : formatDate(date)) : "";
-            }} formatter={(value) => <span className="font-mono font-medium">{format(Number(value))}</span>} />} />
-            <Bar dataKey="spending" fill="var(--color-spending)" radius={[6, 6, 0, 0]} isAnimationActive={!reduceMotion} />
-          </BarChart>
-        </ChartContainer>
-        <p className="mt-3 text-center text-xs text-muted-foreground">{t("dashboard.reportingPeriod", { period: range === "year" ? month.slice(0, 4) : `${formatDate(data[0]?.date ?? "")} – ${formatDate(data.at(-1)?.date ?? "")}` })}</p>
+        {loading.error ? <DataLoadError retry={loading.retry} /> : !loading.ready ? <Skeleton className="h-60 w-full" /> : <>
+          <ChartContainer config={chartConfig} className="h-60 w-full aspect-auto">
+            <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis dataKey="label" tick={range === "week" ? <WeekdayTick /> : undefined} tickLine={false} axisLine={false} tickMargin={8} minTickGap={12} interval={range === "week" ? 0 : "preserveEnd"} />
+              <YAxis tickLine={false} axisLine={false} width={68} tickFormatter={(value) => format(Number(value), { notation: "compact", maximumFractionDigits: 1 })} />
+              <ChartTooltip cursor={{ fill: "hsl(var(--muted))" }} content={<ChartTooltipContent labelFormatter={(_, payload) => {
+                const date = payload?.[0]?.payload?.date;
+                return typeof date === "string" ? (range === "year" ? formatMonthYear(date) : formatDate(date)) : "";
+              }} formatter={(value) => <span className="font-mono font-medium">{format(Number(value))}</span>} />} />
+              <Bar dataKey="spending" fill="var(--color-spending)" radius={[6, 6, 0, 0]} isAnimationActive={!reduceMotion} />
+            </BarChart>
+          </ChartContainer>
+          <p className="mt-3 text-center text-xs text-muted-foreground">{t("dashboard.reportingPeriod", { period: range === "year" ? month.slice(0, 4) : `${formatDate(data[0]?.date ?? "")} – ${formatDate(data.at(-1)?.date ?? "")}` })}</p>
+        </>}
       </CardContent>
     </Card>
   );

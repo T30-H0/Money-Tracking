@@ -11,7 +11,11 @@ import {
   type ReactNode,
 } from "react";
 
-import { TransactionForm } from "@/components/transactions/transaction-form";
+import dynamic from "next/dynamic";
+import { useFinanceData } from "@/hooks/use-finance-data";
+import { DataLoadError } from "@/components/loading/data-load-error";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import {
   Dialog,
   DialogContent,
@@ -23,6 +27,10 @@ import { useFinance } from "@/context/finance-context";
 import { toLocalDateString } from "@/lib/date";
 import type { TransactionInput } from "@/schemas/transaction";
 import { useLanguage } from "@/context/language-context";
+
+const TransactionForm = dynamic(() => import("@/components/transactions/transaction-form").then((module) => module.TransactionForm), {
+  loading: () => <Skeleton className="h-96 w-full" />,
+});
 
 interface QuickAddContextValue {
   openQuickAdd: () => void;
@@ -82,6 +90,7 @@ function QuickAddModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const loading = useFinanceData(open ? ["categories"] : []);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const { currency, addTransaction } = useFinance();
   const { t } = useLanguage();
@@ -112,14 +121,14 @@ function QuickAddModal({
           </DialogDescription>
         </DialogHeader>
         <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2 sm:px-6 sm:pb-6">
-          <TransactionForm
+          {open && (loading.error ? <DataLoadError retry={loading.retry} /> : !loading.ready ? <Skeleton className="h-96 w-full" /> : <TransactionForm
             key={`${open}-${currency}`}
             defaultValues={defaultValues}
             submitLabel={t("transaction.add")}
             onSubmit={addTransaction}
             onSuccess={() => onOpenChange(false)}
             onCancel={() => onOpenChange(false)}
-          />
+          />)}
         </div>
       </DialogContent>
     </Dialog>

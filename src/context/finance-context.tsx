@@ -21,14 +21,15 @@ import {
   SUPPORTED_CURRENCIES,
 } from "@/constants/currency.constants";
 import { useLanguage } from "@/context/language-context";
-import { DEFAULT_LARGE_EXPENSE_THRESHOLD, summarize as summarizeTransactions } from "@/lib/dashboard-data";
+import { DEFAULT_LARGE_EXPENSE_THRESHOLD } from "@/lib/dashboard-data";
 import { sortTransactions } from "@/lib/transactions";
+import { useFinanceStore } from "@/hooks/use-finance-store";
+import type { FinanceResource } from "@/lib/finance-resources";
 import { monthKey } from "@/lib/date";
 import type { TransactionInput } from "@/schemas/transaction";
 import type { CurrencyCode } from "@/types/currency";
 import type {
   Category,
-  MonthSummary,
   Transaction,
   TransactionActionResult,
 } from "@/types/finance";
@@ -42,6 +43,9 @@ import {
 } from "@/utils/currency";
 
 interface FinanceContextValue {
+  loadResource: (resource: FinanceResource) => Promise<void>;
+  loadedResources: FinanceResource[];
+  rememberTransaction: (transaction: Transaction) => void;
   transactions: Transaction[];
   categories: Category[];
   largeExpenseThreshold: number;
@@ -49,31 +53,22 @@ interface FinanceContextValue {
   currencies: typeof SUPPORTED_CURRENCIES;
   setCurrency: (currency: CurrencyCode) => void;
   format: (amountInVnd: number, options?: Intl.NumberFormatOptions) => string;
-  getTransactionsForMonth: (month: string) => Transaction[];
-  getMonthSummary: (month: string) => MonthSummary;
-  totalSummary: MonthSummary;
   addTransaction: (input: TransactionInput) => Promise<TransactionActionResult>;
   updateTransaction: (id: string, input: TransactionInput) => Promise<TransactionActionResult>;
   deleteTransaction: (id: string) => Promise<{ ok: boolean; message?: MessageKey }>;
 }
 
 export interface FinanceProviderProps {
-  initialTransactions: Transaction[];
-  categories: Category[];
   children: ReactNode;
 }
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
 export function FinanceProvider({
-  initialTransactions,
-  categories,
   children,
 }: FinanceProviderProps) {
   const { intlLocale } = useLanguage();
-  const [transactions, setTransactions] = useState(() =>
-    sortTransactions(initialTransactions),
-  );
+  const { transactions, categories, setTransactions, rememberTransaction, loadResource, loadedResources } = useFinanceStore();
   const [currency, setCurrencyState] = useState<CurrencyCode>(DEFAULT_CURRENCY);
 
   useEffect(() => {
@@ -102,18 +97,6 @@ export function FinanceProvider({
     [currency, intlLocale],
   );
 
-  const getTransactionsForMonth = useCallback(
-    (month: string) => transactions.filter((item) => item.date.startsWith(month)),
-    [transactions],
-  );
-
-  const getMonthSummary = useCallback(
-    (month: string) => summarizeTransactions(getTransactionsForMonth(month)),
-    [getTransactionsForMonth],
-  );
-
-  const totalSummary = useMemo(() => summarizeTransactions(transactions), [transactions]);
-
   const addTransaction = useCallback(async (input: TransactionInput) => {
     const temporaryId = `optimistic-${crypto.randomUUID()}`;
     const optimistic: Transaction = {
@@ -140,13 +123,13 @@ export function FinanceProvider({
 
     setTransactions((current) =>
       sortTransactions(
-        current.map((item) =>
+        current.filter((item) => item.id !== result.transaction.id).map((item) =>
           item.id === temporaryId ? result.transaction : item,
         ),
       ),
     );
     return result;
-  }, []);
+  }, [setTransactions]);
 
   const updateTransaction = useCallback(
     async (id: string, input: TransactionInput) => {
@@ -171,7 +154,7 @@ export function FinanceProvider({
       setTransactions((current) => sortTransactions(current.map((item) => item.id === id ? (result.ok ? result.transaction : original) : item)));
       return result;
     },
-    [transactions],
+    [transactions, setTransactions],
   );
 
   const deleteTransaction = useCallback(
@@ -188,11 +171,12 @@ export function FinanceProvider({
       if (!result.ok) setTransactions((current) => sortTransactions([original, ...current]));
       return result;
     },
-    [transactions],
+    [transactions, setTransactions],
   );
 
   const value = useMemo<FinanceContextValue>(
     () => ({
+      loadResource, loadedResources, rememberTransaction,
       transactions,
       categories,
       currency,
@@ -200,14 +184,11 @@ export function FinanceProvider({
       currencies: SUPPORTED_CURRENCIES,
       setCurrency,
       format,
-      getTransactionsForMonth,
-      getMonthSummary,
-      totalSummary,
       addTransaction,
       updateTransaction,
       deleteTransaction,
     }),
-    [transactions, categories, currency, setCurrency, format, getTransactionsForMonth, getMonthSummary, totalSummary, addTransaction, updateTransaction, deleteTransaction],
+    [loadResource, loadedResources, rememberTransaction, transactions, categories, currency, setCurrency, format, addTransaction, updateTransaction, deleteTransaction],
   );
 
   return <FinanceContext.Provider value={value}>{children}</FinanceContext.Provider>;

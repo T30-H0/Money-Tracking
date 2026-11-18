@@ -35,6 +35,7 @@ export function TransactionItem({
   return (
     <div className="flex items-center gap-1">
       <Link
+          prefetch={false}
         href={`/transactions/${transaction.id}`}
         className="flex min-w-0 flex-1 items-center gap-3 rounded-lg py-3.5 outline-none transition-colors hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={t("transactions.view", { name: transaction.note || categoryName })}

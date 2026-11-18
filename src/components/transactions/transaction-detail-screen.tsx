@@ -10,9 +10,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 
-import { TransactionForm } from "@/components/transactions/transaction-form";
+import dynamic from "next/dynamic";
+import { useFinanceData } from "@/hooks/use-finance-data";
+import { DataLoadError } from "@/components/loading/data-load-error";
+import { TransactionDetailLoadingSkeleton } from "@/components/loading/page-skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +42,10 @@ import { useLanguage } from "@/context/language-context";
 import { getCategoryName } from "@/i18n/categories";
 import type { MessageKey } from "@/i18n/messages";
 
+const TransactionForm = dynamic(() => import("@/components/transactions/transaction-form").then((module) => module.TransactionForm), {
+  loading: () => <Skeleton className="h-96 w-full" />,
+});
+
 export function TransactionDetailScreen({
   initialTransaction,
 }: {
@@ -45,12 +54,15 @@ export function TransactionDetailScreen({
   const router = useRouter();
   const {
     categories,
+    rememberTransaction,
     currency,
     format,
     updateTransaction,
     deleteTransaction,
   } = useFinance();
   const { t } = useLanguage();
+  const loading = useFinanceData(["categories"]);
+  useEffect(() => { rememberTransaction(initialTransaction); }, [initialTransaction, rememberTransaction]);
   const [transaction, setTransaction] = useState(initialTransaction);
   const [editing, setEditing] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -72,7 +84,9 @@ export function TransactionDetailScreen({
     [currency, transaction],
   );
 
-  if (!category) return null;
+  if (loading.error) return <DataLoadError retry={loading.retry} />;
+  if (!loading.ready) return <TransactionDetailLoadingSkeleton />;
+  if (!category) return <DataLoadError retry={loading.retry} />;
   const Icon = CATEGORY_ICONS[category.icon];
   const isIncome = transaction.type === "income";
   const categoryName = getCategoryName(category, t);

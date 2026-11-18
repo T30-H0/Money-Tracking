@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 import { signOut } from "@/app/actions/auth";
 import { CurrencySelector } from "@/components/finance/CurrencySelector";
-import { TransactionSearch } from "@/components/navigation/transaction-search";
+import dynamic from "next/dynamic";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,8 @@ import { useLanguage } from "@/context/language-context";
 import { APP_NAME } from "@/i18n/config";
 import { useUser } from "@/context/user-context";
 
+const TransactionSearch = dynamic(() => import("@/components/navigation/transaction-search").then((module) => module.TransactionSearch));
+
 export function Navbar() {
   const { currency, currencies, setCurrency } = useFinance();
   const pathname = usePathname();
@@ -31,6 +33,7 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-30 h-16 border-b bg-background/95 backdrop-blur md:left-60">
       <div className="flex h-full items-center gap-2 px-4 sm:px-6 lg:px-8">
         <Link
+          prefetch={false}
           href="/"
           className="mr-auto flex min-w-0 items-center gap-2 font-semibold tracking-tight md:hidden"
         >
@@ -91,7 +94,7 @@ function AccountMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/settings">
+          <Link prefetch={false} href="/settings">
             <Settings className="size-4" />
             {t("account.settings")}
           </Link>

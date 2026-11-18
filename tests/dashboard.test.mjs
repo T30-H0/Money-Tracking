@@ -323,3 +323,90 @@ test('trend labels use localized weekdays only in week view', () => {
   assert.deepEqual(buildTrendData([], '2027-01', 'month', 'vi-VN', now).slice(0, 3).map(item => item.label), ['1', '2', '3']);
   assert.equal(buildTrendData([], '2027-01', 'year', 'en-US', now)[0].label, 'Jan');
 });
+
+const { resourceDateRange, dashboardResources, trendResources, mergeLoadedTransactions } = load('lib/finance-resources.ts');
+const { getTransactionsInRange, searchTransactions } = load('lib/supabase/finance.ts');
+
+test('initial dashboard requests only the selected and previous months, including January rollover', () => {
+  assert.deepEqual(dashboardResources('2027-01'), ['categories', 'month:2027-01', 'month:2026-12']);
+  assert.deepEqual(dashboardResources(''), []);
+  assert.deepEqual(resourceDateRange('month:2024-02'), { start: '2024-02-01', end: '2024-03-01' });
+  assert.deepEqual(resourceDateRange('month:2026-12'), { start: '2026-12-01', end: '2027-01-01' });
+  assert.deepEqual(resourceDateRange('year:2026'), { start: '2026-01-01', end: '2027-01-01' });
+  for (const invalid of ['month:2026-13', 'month:2026-00', 'year:all', 'all', 'month:2026-01,year:2025']) {
+    assert.equal(resourceDateRange(invalid), null);
+  }
+});
+
+test('trend loads a year only for year view, and adjacent months only for crossing weeks', () => {
+  assert.deepEqual(trendResources('2027-01', 'month'), ['month:2027-01']);
+  assert.deepEqual(trendResources('2027-01', 'year'), ['year:2027']);
+  assert.deepEqual(trendResources('2027-01', 'week', new Date(2027, 0, 1)), ['month:2026-12', 'month:2027-01']);
+  assert.deepEqual(trendResources('2026-11', 'week', new Date(2026, 10, 18)), ['month:2026-11']);
+});
+
+test('late responses cannot resurrect deletions or undo local edits, and overlapping periods deduplicate', () => {
+  const edited = tx('edited', 200, '2026-12-01');
+  const current = [edited, tx('temporary', 300)];
+  const incoming = [tx('edited', 1), tx('deleted', 10), tx('new', 20)];
+  const result = mergeLoadedTransactions(current, incoming, new Set(['edited', 'deleted', 'temporary']));
+  assert.equal(result.find(item => item.id === 'edited').date, '2026-12-01');
+  assert.equal(result.find(item => item.id === 'edited').amount, 200);
+  assert.equal(result.some(item => item.id === 'deleted'), false);
+  assert.equal(result.length, 3);
+  assert.equal(mergeLoadedTransactions(result, incoming, new Set(['edited', 'deleted'])).length, 3);
+  assert.equal(current.length, 2);
+});
+
+function queryClient(resolve) {
+  return { from(table) {
+    const calls = [['from', table]];
+    const query = {};
+    for (const name of ['select', 'eq', 'gte', 'lt', 'order', 'range', 'limit', 'ilike', 'in']) {
+      query[name] = (...args) => { calls.push([name, ...args]); return query; };
+    }
+    query.then = (onFulfilled, onRejected) => Promise.resolve().then(() => resolve(calls)).then(onFulfilled, onRejected);
+    return query;
+  } };
+}
+const dbRow = (id, date = '2026-11-01') => ({ id, type: 'expense', amount: 10, category_id: 'food', date, note: '', created_at: `${date}T00:00:00Z` });
+
+test('period queries stay user/date scoped and fetch over 1000 rows even with a lower server page cap', async () => {
+  const rows = Array.from({ length: 1201 }, (_, index) => dbRow(String(index)));
+  const offsets = [];
+  const client = queryClient((calls) => {
+    assert.ok(calls.some(call => call[0] === 'eq' && call[1] === 'user_id' && call[2] === 'owner'));
+    assert.ok(calls.some(call => call[0] === 'gte' && call[1] === 'date' && call[2] === '2026-11-01'));
+    assert.ok(calls.some(call => call[0] === 'lt' && call[1] === 'date' && call[2] === '2026-12-01'));
+    const [, offset] = calls.find(call => call[0] === 'range');
+    offsets.push(offset);
+    return { data: rows.slice(offset, offset + 300), error: null };
+  });
+  const result = await getTransactionsInRange(client, 'owner', '2026-11-01', '2026-12-01');
+  assert.equal(result.length, 1201);
+  assert.equal(new Set(result.map(item => item.id)).size, 1201);
+  assert.deepEqual(offsets, [0, 300, 600, 900, 1200, 1201]);
+});
+
+test('failed period requests reject instead of returning partial financial totals', async () => {
+  let page = 0;
+  const client = queryClient(() => ++page === 1 ? { data: [dbRow('one')], error: null } : { data: null, error: new Error('offline') });
+  await assert.rejects(getTransactionsInRange(client, 'owner', '2026-11-01', '2026-12-01'), /offline/);
+});
+
+test('search is bounded, literal, user scoped and merges translated-category matches across history', async () => {
+  const client = queryClient((calls) => {
+    assert.ok(calls.some(call => call[0] === 'eq' && call[1] === 'user_id' && call[2] === 'owner'));
+    assert.ok(calls.some(call => call[0] === 'limit' && call[1] === 8));
+    assert.equal(calls.some(call => call[0] === 'gte' || call[0] === 'lt'), false);
+    const text = calls.find(call => call[0] === 'ilike');
+    if (text) {
+      assert.equal(text[2], '%100\\%\\_\\\\%');
+      return { data: [dbRow('same'), dbRow('old', '2020-01-01')], error: null };
+    }
+    assert.deepEqual(calls.find(call => call[0] === 'in'), ['in', 'category_id', ['food']]);
+    return { data: [dbRow('same'), dbRow('recent', '2026-11-18')], error: null };
+  });
+  const result = await searchTransactions(client, 'owner', '100%_\\', ['food']);
+  assert.deepEqual(result.map(item => item.id), ['recent', 'same', 'old']);
+});

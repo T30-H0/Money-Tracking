@@ -20,6 +20,7 @@ export function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 border-r bg-card md:flex md:flex-col">
       <Link
+          prefetch={false}
         href="/"
         className="flex h-16 shrink-0 items-center gap-2.5 border-b px-5 font-semibold tracking-tight"
       >
@@ -33,6 +34,7 @@ export function Sidebar() {
           const active = isNavigationItemActive(pathname, item.href);
           return (
             <Link
+          prefetch={false}
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}

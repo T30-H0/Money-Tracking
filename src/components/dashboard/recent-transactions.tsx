@@ -15,7 +15,7 @@ export function RecentTransactions({ data, month, highlighted = false }: { data:
   const { t } = useLanguage();
   const items = highlighted ? data.large : data.recent;
   const href = transactionsHref({ month, ...(highlighted ? { type: "expense", threshold: largeExpenseThreshold } : {}) });
-  const viewAll = <Button asChild variant="ghost" size="sm" className="shrink-0 text-primary"><Link href={href}>{t("dashboard.viewAll")}<ArrowRight className="size-3.5" /></Link></Button>;
+  const viewAll = <Button asChild variant="ghost" size="sm" className="shrink-0 text-primary"><Link prefetch={false} href={href}>{t("dashboard.viewAll")}<ArrowRight className="size-3.5" /></Link></Button>;
   return (
     <Card className={cn("flex min-w-0 flex-col overflow-hidden shadow-none", highlighted && "max-xl:order-first")}>
       <CardHeader className="flex-row items-center justify-between gap-2 p-5 pb-2">

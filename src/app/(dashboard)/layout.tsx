@@ -10,7 +10,6 @@ import { Sidebar } from "@/components/navigation/sidebar";
 import { QuickAddProvider } from "@/components/transactions/quick-add-modal";
 import { FinanceProvider } from "@/context/finance-context";
 import { UserProvider, type AppUser } from "@/context/user-context";
-import { getFinanceData } from "@/lib/supabase/finance";
 import { createClient } from "@/lib/supabase/server";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -26,7 +25,6 @@ async function AuthenticatedLayout({ children }: { children: ReactNode }) {
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) redirect("/login");
 
-  const finance = await getFinanceData(supabase);
   const user: AppUser = {
     name: data.user.user_metadata?.full_name as string | undefined,
     email: data.user.email ?? "",
@@ -35,7 +33,7 @@ async function AuthenticatedLayout({ children }: { children: ReactNode }) {
 
   return (
     <UserProvider user={user}>
-      <FinanceProvider initialTransactions={finance.transactions} categories={finance.categories}>
+      <FinanceProvider key={data.user.id}>
         <QuickAddProvider>
           <Sidebar />
           <Navbar />

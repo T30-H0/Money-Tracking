@@ -17,7 +17,7 @@ export function BottomNav() {
         {NAVIGATION_ITEMS.map((item) => {
           const active = isNavigationItemActive(pathname, item.href);
           return (
-            <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className="h-full rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Link prefetch={false} key={item.href} href={item.href} aria-current={active ? "page" : undefined} className="h-full rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <NavigationLinkContent
                 icon={item.icon}
                 label={t(item.labelKey)}
